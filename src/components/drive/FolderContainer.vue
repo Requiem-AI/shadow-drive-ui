@@ -1,9 +1,11 @@
 <template>
 	<div class="folder-container">
-		<Folder v-for="(folder,key) in folders" :key="key" :folder="folder"></Folder>
+		<Folder class="my-2" v-for="(folder,key) in folders" :key="key" :folder="folder" :active="activeDrive === folder.publicKey.toString()"
+						@active="onDriveClick"></Folder>
 
 		<div class="text-center" v-if="folders.length === 0">
-			<i>No Drives Created</i>
+			<i v-show="loading">Loading...</i>
+			<i v-show="!loading">No Drives Created</i>
 		</div>
 	</div>
 </template>
@@ -18,6 +20,19 @@ export default {
 		folders: {
 			type: Array,
 			required: true
+		},
+		activeDrive: {
+			type: String,
+			required: true
+		},
+		loading: {
+			type: Boolean,
+			required: true
+		}
+	},
+	methods: {
+		onDriveClick: function (drive) {
+			this.$emit("active", drive);
 		}
 	}
 }

@@ -21,8 +21,8 @@
 				<i>Creating a drive called <code>{{form.name ? form.name : '-'}}</code> with an initial size of <code>{{form.size}}{{form.denom}}</code></i>
 			</div>
 			<div class="col-12 text-center mt-3">
-				<button class="btn btn-primary" @click="onCreate">Create</button>
-				<button @click="onCancel" class="btn btn-secondary btn-sm">Cancel</button>
+				<button class="btn btn-primary me-2" @click="onCreate">Create</button>
+				<button @click="onCancel" class="btn btn-secondary">Cancel</button>
 			</div>
 		</div>
 	</div>
@@ -31,13 +31,19 @@
 <script>
 export default {
 	name: "FolderCreate",
+	props: {
+		loading: {
+			type: Boolean,
+			default: false
+		}
+	},
 	data() {
 		return {
 			form: {
 				name: "",
 				size: 1,
 				denom: "KB",
-			}
+			},
 		}
 	},
 	methods: {

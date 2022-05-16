@@ -1,6 +1,6 @@
 <template>
 	<div id="app">
-		<Topnav></Topnav>
+		<Topnav class="mb-3"></Topnav>
 		<router-view class="container-fluid"></router-view>
 	</div>
 </template>
