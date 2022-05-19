@@ -1,7 +1,7 @@
 <template>
 	<div class="file">
 		<i class="fa fa-file fa-5x"></i>
-		{{ file.name }}
+		<p>{{ file }}</p>
 	</div>
 </template>
 
@@ -10,7 +10,7 @@ export default {
 	name: "FileThumbnail",
 	props: {
 		file: {
-			type: Object,
+			type: String,
 			required: true
 		}
 	},
@@ -19,4 +19,12 @@ export default {
 
 <style scoped>
 
+.file {
+	text-align: center;
+}
+
+p {
+	font-size: 0.8em;
+	margin-bottom: 0;
+}
 </style>

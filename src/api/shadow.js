@@ -1,7 +1,7 @@
-import ShdwDrive from "@shadow-drive/sdk";
+import {ShdwDrive} from "@shadow-drive/sdk";
 import * as web3 from "@solana/web3.js";
 import {PhantomWalletAdapter} from '@solana/wallet-adapter-wallets';
-import FormData from "form-data"
+import axios from 'axios'
 
 export class Shadow {
     connection;
@@ -57,6 +57,10 @@ export class Shadow {
         return this.drive.getStorageAccount(pk);
     }
 
+    async indexFiles(driveID) {
+        return axios.post(`https://shadow-storage.genesysgo.net/list-objects`, {storageAccount: driveID})
+    }
+
     async delete(id) {
         const pk = new web3.PublicKey(id)
         console.log("deleting", pk)
@@ -78,17 +82,20 @@ export class Shadow {
     }
 
     async uploadFile(drive, data) {
-
-        const fd = new FormData();
-        fd.append('file', data);
-
-        console.log("uploading file", drive, fd.get('file'))
         const pk = new web3.PublicKey(drive)
-        return this.drive.uploadFile(pk, fd);
+        console.log("Uploading file to drive: ", pk.toString())
+        return this.drive.uploadFile(pk, data);
     }
 
-    async deleteFile(filename, drive, data) {
-        return this.drive.deleteFile(filename, drive, data);
+    async uploadMultipleFiles(drive, daraArr) {
+        const pk = new web3.PublicKey(drive)
+        console.log("Uploading multiple file to drive: ", pk.toString(), daraArr)
+        return this.drive.uploadMultipleFiles(pk, daraArr);
+    }
+
+    async deleteFile(drive, filename) {
+        const pk = new web3.PublicKey(drive)
+        return this.drive.deleteFile(pk, filename);
     }
 
     async setImmutable(drive) {

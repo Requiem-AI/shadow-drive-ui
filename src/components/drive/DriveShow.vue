@@ -10,9 +10,9 @@
 				<DriveStorage v-show="!edit" class="inlineh4 text-center" :folder="drive"></DriveStorage>
 				<DriveStorageEdit @edit="onEdit" v-show="edit" :folder="drive"></DriveStorageEdit>
 			</div>
-<!--			<div class="col-1">-->
-<!--				<button class="btn btn-primary btn-block btn-sm" @click="$emit('edit')">Edit</button>-->
-<!--			</div>-->
+			<!--			<div class="col-1">-->
+			<!--				<button class="btn btn-primary btn-block btn-sm" @click="$emit('edit')">Edit</button>-->
+			<!--			</div>-->
 			<div class="col-1">
 				<button class="btn btn-warning btn-block btn-sm" @click="edit = !edit">Resize</button>
 			</div>
@@ -50,43 +50,55 @@
 				<code>{{ drive.account.deleteRequestEpoch + 1 }}</code>
 			</div>
 			<div class="col-1 text-right pointer" @click="showInfo = !showInfo">
-				<i class="fa fa-minus fa-2x"></i>
+				<i class="fa fa-minus"></i>
 			</div>
 		</div>
 
 		<div class="row text-right" v-show="!showInfo" @click="showInfo = !showInfo">
 			<div class="col-12 pointer">
-				<span class="mx-3 c text-uppercase">Details</span>
-				<i class="fa fa-plus fa-2x float-end"></i>
+				<span class="mx-3 c text-uppercase small">Details</span>
+				<i class="fa fa-plus float-end"></i>
 			</div>
 		</div>
 
-		<div class="row">
+		<div class="row mt-3" v-if="useThumbnails">
 			<div class="col" v-for="(file,key) in files" :key="key">
-				<FileThumbnail :file="file"></FileThumbnail>
+				<FileThumbnail @delete="onDeleteFile" :file="file"></FileThumbnail>
 			</div>
 		</div>
 
-		<div class="row mt-5">
-			<div class="text-center" v-show="!drive.files">
+		<div class="row mt-3" v-if="!useThumbnails">
+			<div class="col-12" :key="key" v-for="(file,key) in files">
+				<FileRow @delete="onDeleteFile" :file="file" :drive="drive"></FileRow>
+			</div>
+		</div>
 
 
-				<p>No files uploaded...</p>
+		<div class="file-container text-center" v-show="files === null">
+			<p class="small">Loading files...</p>
+			<i class="fa fa-spinner fa-spin"></i>
+		</div>
 
+		<div class="file-container text-center" v-show="files !== null && files.length <= 0">
+			<p class="small">No files uploaded...</p>
+		</div>
+
+		<div class="row mt-3">
+			<div class="text-center">
 				<div ref="uploader" class="upload-container">
 					<form enctype="multipart/form-data">
-						<input id="file-upload" ref="file" type="file" class="file-upload" accept=".png,.jpg,.jpeg,.gif" @change="filesChange">
+						<input id="file-upload" ref="file" type="file" multiple="true" class="file-upload" accept=".png,.jpg,.jpeg,.gif" @change="filesChange">
 					</form>
 					<p class="mt-4">Drag to upload</p>
 				</div>
 
 				<div class="row mt-3" v-show="uploadFiles.length > 0">
 					<div class="col-12 my-1" v-for="(file,key) in uploadFiles" :key="key">
-						<FileUpload @remove="uploadFiles.splice(key,1)" :file="file"></FileUpload>
+						<FileUpload @remove="uploadFiles.splice(key,1)" :request="file"></FileUpload>
 					</div>
 
 					<div class="col-12 text-center my-3">
-						<p class="small mb-0">Total Upload Size: {{(uploadSize / 1024 / 1024).toFixed(2)}} MB</p>
+						<p class="small mb-0">Total Upload Size: {{ (uploadSize / 1024 / 1024).toFixed(2) }} MB</p>
 						<p v-show="!canUpload" class="small text-danger">Upload size exceeds available size!</p>
 						<button :disabled="!canUpload" class="btn btn-primary" @click="onUploadClick">Upload</button>
 					</div>
@@ -104,47 +116,47 @@ import DriveStorage from "./DriveStorage";
 import DriveLock from "./DriveLock";
 import FileUpload from "./FileUpload";
 import DriveStorageEdit from "./DriveStorageEdit";
+import FileRow from "./FileRow";
 
 export default {
 	name: "DriveShow",
-	components: {DriveStorageEdit, FileUpload, DriveStorage, FileThumbnail, DriveLock},
+	components: {FileRow, DriveStorageEdit, FileUpload, DriveStorage, FileThumbnail, DriveLock},
 	props: {
 		drive: {
 			type: Object,
 			required: true
 		},
+		files: {
+			default: function () {
+				return null;
+			}
+		},
 		uploadFiles: {
 			type: Array,
-			default: function() {
+			default: function () {
 				return [];
 			}
 		}
 	},
 	data() {
 		return {
+			useThumbnails: false,
 			edit: false,
 			showInfo: false,
 		}
 	},
 	computed: {
-		files() {
-			if (this.drive === null) {
-				return [];
-			}
-			return [];
-			// return this.drive.files;
-		},
 		createdAt: function () {
 			return new Date(this.drive.account.creationTime).toLocaleString();
 		},
 
-		uploadSize: function() {
+		uploadSize: function () {
 			return this.uploadFiles.reduce((acc, file) => {
-				return acc + file.size;
+				return acc + file.file.size;
 			}, 0);
 		},
 
-		canUpload: function() {
+		canUpload: function () {
 			return this.uploadSize < this.drive.account.storageAvailable;
 		}
 	},
@@ -167,12 +179,34 @@ export default {
 			this.visible = false;
 		},
 		filesChange: function () {
-			const file = this.$refs.file.files[0]
+			for(let i = 0; i< this.$refs.file.files.length;i++) {
+				this.onFile(this.$refs.file.files[i])
+			}
+		},
+
+		onFile:function(file) {
 			if (!file) {
 				return
 			}
 			console.log("File dropped", file)
 			// handle file changes
+
+			if (file.name.length > 32) {
+				const ext = "." + file.name.split('.').pop();
+				const shorterName = file.name.substr(0, 32 - ext.length) + ext
+				Object.defineProperty(file, 'name', {
+					writable: true,
+					value: shorterName
+				});
+			}
+
+			const alreadyExists = this.uploadFiles.filter((f) => f.file.name === file.name)
+			const alreadyUploaded = this.files.filter((f) => f.name === file.name && f.status !== "pending")
+
+			if (alreadyUploaded.length > 0 || alreadyExists.length > 0) {
+				this.$toastr.e("File already uploaded")
+				return
+			}
 
 			// file.status = 'pending'
 			// file.uri = URL.createObjectURL(file);
@@ -182,13 +216,17 @@ export default {
 			this.$emit("addFile", file)
 		},
 
-		onEdit: function(data) {
+		onEdit: function (data) {
 			this.$emit("resize", data);
 			this.edit = !this.edit;
 		},
 
-		onUploadClick: function() {
+		onUploadClick: function () {
 			this.$emit("upload")
+		},
+
+		onDeleteFile: function (f) {
+			this.$emit("file-delete", f)
 		},
 	},
 	mounted() {
@@ -213,7 +251,6 @@ export default {
 }
 
 .c {
-	line-height: 2.2em;
 	cursor: pointer;
 }
 
@@ -256,5 +293,9 @@ form {
 
 .pointer {
 	cursor: pointer;
+}
+
+.file-container {
+	min-height: 100px;
 }
 </style>

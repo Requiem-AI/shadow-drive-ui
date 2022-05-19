@@ -5,13 +5,16 @@
 			<!--			<i class="fa fa-file fa-2x"></i>-->
 			<!--		</div>-->
 			<div class="col-8 text-left">
-				<span class="small">{{ file.name }}</span>
+				<span class="small">{{ request.file.name }}</span>
+			</div>
+<!--			<div class="col" v-if="request.result !== null">-->
+<!--				<div class=""><code class="small">{{ request.result.finalized_location }}</code></div>-->
+<!--			</div>-->
+			<div class="col">
+				<div class="badge bg-primary">{{ request.status }}</div>
 			</div>
 			<div class="col">
-				<div class="badge bg-primary">{{ file.status }}</div>
-			</div>
-			<div class="col">
-				<code>{{ file.type }}</code>
+				<code>{{ request.file.type }}</code>
 			</div>
 			<div class="col">
 				{{ size }} MB
@@ -27,24 +30,24 @@
 export default {
 	name: "FileUpload",
 	props: {
-		file: {
-			type: File,
+		request: {
+			type: Object,
 			required: true
 		}
 	},
 	computed: {
 		size: function () {
-			return (this.file.size / 1024 / 1024).toFixed(2);
+			return (this.request.file.size / 1024 / 1024).toFixed(2);
 		}
 	},
 	methods: {
 		remove: function (e) {
 			e.preventDefault()
-			this.$emit("remove", this.file);
+			this.$emit("remove", this.request.file);
 		}
 	},
 	mounted() {
-		console.log("FileUpload mounted", this.file);
+		console.log("FileUpload mounted", this.request);
 	}
 }
 </script>

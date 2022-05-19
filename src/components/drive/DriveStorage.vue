@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<span>{{ storageTotal - storageAvailable }} {{ sizeDenom }}</span> / <span>{{ storageTotal }} {{ sizeDenom }}</span>
+		<span>{{ storageUsed }} {{ sizeDenom }}</span> / <span>{{ storageTotal }} {{ sizeDenom }}</span>
 	</div>
 </template>
 
@@ -13,8 +13,8 @@ export default {
 			required: true
 		},
 	},
-	computed:{
-		sizeDenom: function() {
+	computed: {
+		sizeDenom: function () {
 			if (this.folder.account.storage < 1024) {
 				return "B";
 			}
@@ -27,15 +27,19 @@ export default {
 			return "GB";
 		},
 
+		storageUsed: function () {
+			return (this.storageTotal - this.storageAvailable).toFixed(2);
+		},
+
 		storageAvailable: function () {
-			return this.toSize(this.folder.account.storageAvailable);
+			return this.toSize(this.folder.account.storageAvailable).toFixed(2);
 		},
 		storageTotal: function () {
-			return this.toSize(this.folder.account.storage);
+			return this.toSize(this.folder.account.storage).toFixed(2);
 		},
 	},
 	methods: {
-		toSize: function(s) {
+		toSize: function (s) {
 			switch (this.sizeDenom) {
 				case "B":
 					return s;

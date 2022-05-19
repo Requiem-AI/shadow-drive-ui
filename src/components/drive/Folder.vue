@@ -1,17 +1,19 @@
 <template>
 	<div :class="`folder ${active ? 'active' : ''}`" @click="onClick">
 		<div class="row">
-			<div class="col">
+			<div class="col-5">
 				<h5 data-toggle="tooltip" data-placement="top" :title="folder.publicKey">{{ folder.account.identifier }}</h5>
 			</div>
-			<div class="col size text-center">
+			<div class="col-6 size text-center">
 				<DriveStorage :folder="folder"></DriveStorage>
 			</div>
-			<div class="col text-center" v-if="folder.account.toBeDeleted">
-				<span class="badge bg-danger">Deleting</span>
-			</div>
-			<div class="col text-right">
+			<div class="col-1 text-right">
 				<DriveLock :folder="folder"></DriveLock>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col" v-if="folder.account.toBeDeleted">
+				<span class="badge bg-danger">Deleting</span>
 			</div>
 		</div>
 	</div>

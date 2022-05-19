@@ -23,7 +23,7 @@
 				<div class="card pt-1">
 					<div class="card-body">
 						<FolderCreate @create="onDriveCreate" v-show="showCreateFolder" @close="hideCreate"></FolderCreate>
-						<DriveShow v-if="activeDrive !== ''" :drive="currentDrive" :uploadFiles="uploadFiles" @undelete="onDriveUnDelete" @edit="onDriveEdit" @resize="onDriveResize" @delete="onDriveDelete" @freeze="onDriveFreeze" @addFile="onFileUpload" @upload="onUpload"></DriveShow>
+						<DriveShow v-if="activeDrive !== ''" :files="files" :drive="currentDrive" :uploadFiles="uploadFiles" @undelete="onDriveUnDelete" @edit="onDriveEdit" @resize="onDriveResize" @delete="onDriveDelete" @file-delete="onFileDelete" @freeze="onDriveFreeze" @addFile="onFileUpload" @upload="onUpload"></DriveShow>
 
 						<div class="my-5 text-center" v-if="activeDrive === '' && !showCreateFolder">
 							<i class="">No drive selected</i>
@@ -58,6 +58,7 @@ export default {
 			showCreateFolder: false,
 			activeDrive: "",
 			drives: [],
+			files: null,
 			uploadFiles: [],
 		}
 	},
@@ -87,9 +88,8 @@ export default {
 			this.shadow.create(cfg.name, cfg.size, cfg.denom).then((resp) => {
 				console.log("Drive created", resp);
 				this.$toastr.s("Drive created");
-
+				this.hideCreate();
 				this.driveIndex();
-				this.activeDrive = resp.shdw_bucket;
 
 			}).catch((err) => {
 				console.log("Drive create error", err);
@@ -104,28 +104,131 @@ export default {
 		 * @param data
 		 */
 		onFileUpload(data) {
-			this.uploadFiles.push(data);
+
+			if (data.name.length > 32) {
+				const ext = "." + data.name.split('.').pop();
+				const shorterName = data.name.substr(0, 31 - ext.length) + ext
+				Object.defineProperty(data, 'name', {
+					writable: true,
+					value: shorterName
+				});
+			}
+
+			this.uploadFiles.push({
+				status: "pending",
+				result: null,
+				file: data
+			});
 		},
 
 		onUpload() {
 			console.log("Files to upload", this.uploadFiles.length);
-			for (let i = 0; i < this.uploadFiles.length; i++) {
-				this.uploadSingleFile(this.uploadFiles[i]);
+
+			try {
+				this.uploadMultipleFiles(this.uploadFiles)
+			} catch (err) {
+				console.log("File upload error", err);
+
+				for (let i = 0; i < this.uploadFiles.length; i++) {
+					this.uploadFiles[i].status = "error"
+				}
+
+				this.loading = false
 			}
+
+			// for (let i = 0; i < this.uploadFiles.length; i++) {
+			// 	try {
+			// 		this.uploadSingleFile(this.uploadFiles[i]);
+			// 	} catch (err) {
+			// 		console.log("File upload error", err);
+			// 		this.uploadFiles[i].status = "error"
+			// 		this.loading = false
+			// 	}
+			// }
 		},
 
-		uploadSingleFile(data) {
+		uploadMultipleFiles(uploadArr) {
+
+			const files = []
+			this.loading = true;
+
+			//Validate file names
+			for (let i = 0; i < uploadArr.length; i++) {
+				if (uploadArr[i].status !== "pending") {
+					console.warn("File already uploaded: ", uploadArr[i])
+					continue
+				}
+
+				uploadArr[i].status = "uploading"
+
+				const data = uploadArr[i].file
+				if (data.name.length > 32) {
+					const ext = "." + data.name.split('.').pop();
+					const shorterName = data.name.substr(0, 32 - ext.length) + ext
+					Object.defineProperty(data, 'name', {
+						writable: true,
+						value: shorterName
+					});
+				}
+
+				files.push(uploadArr[i].file)
+			}
+
+			this.shadow.uploadMultipleFiles(this.activeDrive, files).then((resp) => {
+				console.log("File Uploaded", resp);
+				this.$toastr.s("Files Uploaded");
+
+				for (let i = 0; i < uploadArr.length; i++) {
+					uploadArr[i].status = "uploaded"
+					uploadArr[i].result = resp
+				}
+
+				this.indexFiles();
+
+			}).catch((err) => {
+				console.log("File upload error", err);
+
+				for (let i = 0; i < err.length; i++) {
+					this.$toastr.e(err[i].error, err[i].file);
+				}
+
+			}).finally(() => {
+				this.loading = false;
+			});
+		},
+
+		uploadSingleFile(uploadReq) {
+
+			this.loading = true;
+			const data = uploadReq.file
+
+			if (data.name.length > 32) {
+				const ext = "." + data.name.split('.').pop();
+				const shorterName = data.name.substr(0, 32 - ext.length) + ext
+				Object.defineProperty(data, 'name', {
+					writable: true,
+					value: shorterName
+				});
+			}
+
 			console.log("Attempting to upload file", data);
+			uploadReq.status = "uploading"
 			this.shadow.uploadFile(this.activeDrive, data).then((resp) => {
 				console.log("File Uploaded", resp);
 				this.$toastr.s("File Uploaded");
 
-				// this.driveIndex();
-				// this.activeDrive = resp.shdw_bucket;
+				uploadReq.status = "uploaded"
+				uploadReq.result = resp
+
+				this.indexFiles();
 
 			}).catch((err) => {
 				console.log("File upload error", err);
-				this.$toastr.e(err.message);
+
+				for (let i = 0; i < err.length; i++) {
+					this.$toastr.e(err[i].error, err[i].file);
+				}
+
 			}).finally(() => {
 				this.loading = false;
 			});
@@ -134,7 +237,15 @@ export default {
 		onVisitDrive(drive) {
 			console.log("Setting active drive", drive);
 			this.activeDrive = drive
-			this.driveShow(drive);
+			this.uploadFiles = [];
+			this.files = null;
+			this.indexFiles();
+		},
+
+		indexFiles() {
+			this.shadow.indexFiles(this.activeDrive).then((r) => {
+				this.files = r.data.keys
+			});
 		},
 
 		onDriveEdit() {
@@ -174,6 +285,20 @@ export default {
 
 			}).catch((err) => {
 				console.log("Drive size error", err);
+				this.$toastr.e(err.message);
+			}).finally(() => {
+				this.loading = false;
+			});
+		},
+		onFileDelete(f) {
+			this.loading = true;
+			this.shadow.deleteFile(this.activeDrive, f).then((resp) => {
+				console.log("File deleted", resp);
+				this.$toastr.s("File deleted");
+				this.indexFiles();
+
+			}).catch((err) => {
+				console.log("File delete error", err);
 				this.$toastr.e(err.message);
 			}).finally(() => {
 				this.loading = false;
