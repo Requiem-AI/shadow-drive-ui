@@ -378,3 +378,21 @@ input.form-control:active, input.form-control:focus, textarea.form-control:activ
 input.form-control:active::placeholder, input.form-control:focus::placeholder, textarea.form-control:focus::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
     color: #0084FF;
 }
+
+
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    box-shadow: unset;
+    border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.68);
+    border-radius: 10px;
+}

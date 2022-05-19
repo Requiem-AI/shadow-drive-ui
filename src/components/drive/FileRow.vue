@@ -1,17 +1,15 @@
 <template>
 	<div class="file my-1">
 		<div class="row text-left">
-			<div class="col-1"><i class="fa fa-file fa-2x"></i></div>
-			<div class="col-3">
+			<div class="col-10">
 				<p class="small">{{ file }}</p>
 <!--				<p><a :href="`https://explorer.solana.com/a`"><code class="small">{{ publicKey }}</code></a></p>-->
+				<div class="uri-container"><a target="_blank" :href="url" class="small uri">{{ url }}</a></div>
 			</div>
-			<div class="col-6">
-				<a target="_blank" :href="url" class="small uri">{{ url }}</a>
-			</div>
-			<div class="col-2">
-				<a target="_blank" :href="url" class="btn btn-primary btn-sm mx-2">View</a>
-				<button class="btn btn-danger btn-sm" @click="onDelete">Delete</button>
+			<div class="col-sm-2 text-right text-sm-center">
+				<a target="_blank" :href="url" class="btn btn-primary btn-xs btn-block me-2">View</a>
+				<button class="btn btn-danger btn-xs btn-block" @click="onDelete">Delete</button>
+
 			</div>
 		</div>
 	</div>
@@ -70,18 +68,29 @@ export default {
 
 .file {
 	text-align: center;
-	border: 1px solid white;
-	padding: 1%;
-	border-radius: 7px;
+	border-bottom: 1px solid white;
+	padding: 5px;
 	transition: all 0.2s ease-in-out;
+}
+
+.btn-xs {
+	padding: 0 0.25rem;
+	font-size: 0.6em;
+	line-height: 2;
 }
 
 .file:hover {
 	background: rgba(38, 182, 212, 0.2);
 }
 
+.uri-container {
+	width: 100%;
+	overflow: hidden;
+}
+
 .uri {
 	font-size: 0.7em;
+	white-space: nowrap;
 }
 
 code.small {

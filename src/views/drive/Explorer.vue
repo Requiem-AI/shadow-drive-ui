@@ -1,8 +1,7 @@
 <template>
 	<div class="container-fluid">
 		<div class="row">
-			<div class="col-5 col-md-3">
-
+			<div class="col-sm-12 col-md-4 col-lg-3 mb-2 mb-md-0 ">
 				<div class="card">
 					<div class="card-header">
 						<div class="row">
@@ -15,11 +14,22 @@
 					<div class="card-body">
 						<FolderContainer @active="onVisitDrive" :folders="drives" :activeDrive="activeDrive" :loading="loading"></FolderContainer>
 					</div>
+
+					<div class="card-footer text-center">
+						<p class="small footer">Created With ❤️ By <a target="_blank" href="https://twitter.com/alpha_batem">@AlphaBatem</a>
+						</p>
+						<p class="mb-0 small">
+							<a target="_blank" href="https://solana.com">Solana</a> |
+							<a target="_blank" href="https://alphabatem.com">AlphaBatem</a> |
+							<a target="_blank" href="https://metaverse.alphabatem.com">Metaverse</a> |
+							<a target="_blank" href="https://genesysgo.com/">GenesysGo</a>
+						</p>
+					</div>
 				</div>
 
 			</div>
 
-			<div class="col-7 col-md-9">
+			<div class="col-sm-12 col-md-8 col-lg-9">
 				<div class="card pt-1">
 					<div class="card-body">
 						<FolderCreate @create="onDriveCreate" v-show="showCreateFolder" @close="hideCreate"></FolderCreate>
@@ -35,7 +45,7 @@
 		</div>
 		<div class="loader" v-show="loading">
 			<div class="row text-center">
-				<p>Processing Please Wait...</p>
+				<p>Loading Please Wait...</p>
 				<div class="d-block"><i class="fa fa-spinner fa-spin fa-3x"></i></div>
 			</div>
 		</div>
@@ -380,11 +390,14 @@ export default {
 			this.driveIndex()
 			await this.shadow.getSHDWBalances(this.$store.state.wallet_addr).then(r => {
 				const token = r.value[0];
-				this.$store.commit('set_token_balance', {key: "shdw", value: token.account.data.parsed.info.tokenAmount.uiAmount.toFixed(4)});
+				this.$store.commit('set_token_balance', {
+					key: "shdw",
+					value: token.account.data.parsed.info.tokenAmount.uiAmount.toFixed(4)
+				});
 			})
 
 			await this.shadow.getSOLBalance(this.$store.state.wallet_addr).then(r => {
-			this.$store.commit('set_token_balance', {key: "sol", value: (r / LAMPORTS_PER_SOL).toFixed(4)});
+				this.$store.commit('set_token_balance', {key: "sol", value: (r / LAMPORTS_PER_SOL).toFixed(4)});
 			})
 		}
 	},
@@ -399,7 +412,7 @@ export default {
 
 <style scoped>
 .loader {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
@@ -410,5 +423,9 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+p.footer {
+	font-weight: bold;
 }
 </style>

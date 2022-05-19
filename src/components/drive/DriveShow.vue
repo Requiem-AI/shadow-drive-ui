@@ -1,28 +1,28 @@
 <template>
 	<div class="drive-show">
 		<div class="row mb-3" v-show="drive !== null">
-			<div class="col">
+			<div class="col-sm-12 col-md-6 col-lg-4">
 				<span class="inlineh4">{{ drive.account.identifier }}</span>
 				<DriveLock class="d-inline mx-3" :folder="drive"></DriveLock>
 				<span v-if="drive.account.toBeDeleted" class="badge bg-danger">PENDING DELETION</span>
 			</div>
-			<div class="col-6">
+			<div class="col-sm-12 col-md-6 col-lg-4">
 				<DriveStorage v-show="!edit" class="inlineh4 text-center" :folder="drive"></DriveStorage>
 				<DriveStorageEdit @edit="onEdit" v-show="edit" :folder="drive"></DriveStorageEdit>
 			</div>
 			<!--			<div class="col-1">-->
 			<!--				<button class="btn btn-primary btn-block btn-sm" @click="$emit('edit')">Edit</button>-->
 			<!--			</div>-->
-			<div class="col-1">
+			<div class="col-4 col-md-4 col-lg">
 				<button class="btn btn-warning btn-block btn-sm" @click="edit = !edit">Resize</button>
 			</div>
-			<div class="col-1" v-if="!drive.account.toBeDeleted">
+			<div class="col-4 col-md-4 col-lg" v-if="!drive.account.toBeDeleted">
 				<button class="btn btn-danger btn-block btn-sm" @click="$emit('delete')">Delete</button>
 			</div>
-			<div class="col-1">
+			<div class="col-4 col-md-4 col-lg">
 				<button class="btn btn-secondary btn-block btn-sm" @click="$emit('freeze')">Freeze</button>
 			</div>
-			<div class="col-2" v-if="drive.account.toBeDeleted">
+			<div class="col-4 col-lg-2" v-if="drive.account.toBeDeleted">
 				<button class="btn btn-danger btn-block btn-sm" @click="$emit('undelete')">Cancel Delete</button>
 			</div>
 		</div>
@@ -65,13 +65,13 @@
 
 		<hr>
 
-		<div class="row mt-3" v-if="useThumbnails">
+		<div class="file-container row mt-3" v-if="useThumbnails">
 			<div class="col" v-for="(file,key) in files" :key="key">
 				<FileThumbnail @delete="onDeleteFile" :file="file"></FileThumbnail>
 			</div>
 		</div>
 
-		<div class="row mt-3" v-if="!useThumbnails">
+		<div class="file-container row mt-3" v-if="!useThumbnails">
 			<div class="col-12" :key="key" v-for="(file,key) in files">
 				<FileRow @delete="onDeleteFile" :file="file" :drive="drive"></FileRow>
 			</div>
@@ -83,7 +83,7 @@
 			<i class="fa fa-spinner fa-spin"></i>
 		</div>
 
-		<div class="file-container text-center" v-show="files !== null && files.length <= 0">
+		<div class="no-files text-center" v-show="files !== null && files.length <= 0">
 			<p class="small">No files uploaded...</p>
 		</div>
 
@@ -300,6 +300,11 @@ form {
 }
 
 .file-container {
+	max-height: 525px;
+	overflow-y: scroll;
+}
+
+.no-files {
 	min-height: 100px;
 }
 </style>
