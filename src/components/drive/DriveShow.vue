@@ -54,12 +54,16 @@
 			</div>
 		</div>
 
+		<hr>
+
 		<div class="row text-right" v-show="!showInfo" @click="showInfo = !showInfo">
 			<div class="col-12 pointer">
-				<span class="mx-3 c text-uppercase small">Details</span>
+				<span class="mx-3 c float-start text-uppercase small badge">Details</span>
 				<i class="fa fa-plus float-end"></i>
 			</div>
 		</div>
+
+		<hr>
 
 		<div class="row mt-3" v-if="useThumbnails">
 			<div class="col" v-for="(file,key) in files" :key="key">
