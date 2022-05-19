@@ -15,7 +15,18 @@
 						</router-link>
 					</li>
 				</ul>
-				<span class="nav-item text-white small me-3">{{ $store.state.wallet_addr }}</span>
+
+				<div class="nav-item me-auto">
+					{{ $store.state.balances['sol'] }} SOL
+				</div>
+
+				<div class="nav-item me-auto">
+					{{ $store.state.balances['shdw'] }} SHDW
+				</div>
+
+				<div class="nav-item text-white small me-3">
+					{{ $store.state.wallet_addr }}
+				</div>
 				<div class="auth d-none d-sm-block">
 
 					<button v-if="$store.state.wallet_connected" v-on:click="logout" class="btn btn-block btn-primary wow fadeIn"

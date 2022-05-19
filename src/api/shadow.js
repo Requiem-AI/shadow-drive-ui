@@ -2,9 +2,12 @@ import {ShdwDrive} from "@shadow-drive/sdk";
 import * as web3 from "@solana/web3.js";
 import {PhantomWalletAdapter} from '@solana/wallet-adapter-wallets';
 import axios from 'axios'
+// import { TOKEN_PROGRAM_ID  } from "@solana/spl-token";
 
 export class Shadow {
     connection;
+
+    program = new web3.PublicKey("SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y");
 
     drive = null
 
@@ -21,11 +24,19 @@ export class Shadow {
             'finalized',
         );
 
-        window.co2 = this.connection
-
         console.log(pk)
         this.drive = await new ShdwDrive(this.connection, pk._wallet).init();
         console.log("Connected to shadow drive");
+    }
+
+    async getSOLBalance(walletAddr) {
+        const pk = new web3.PublicKey(walletAddr)
+        return this.connection.getBalance(pk)
+    }
+
+    async getSHDWBalances(walletAddr) {
+        const pk = new web3.PublicKey(walletAddr)
+        return this.connection.getParsedTokenAccountsByOwner(pk, { mint: this.program })
     }
 
 

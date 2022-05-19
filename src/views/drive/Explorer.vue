@@ -47,6 +47,7 @@ import {Shadow} from "../../api/shadow";
 import FolderContainer from "../../components/drive/FolderContainer";
 import FolderCreate from "../../components/drive/FolderCreate";
 import DriveShow from "../../components/drive/DriveShow";
+import {LAMPORTS_PER_SOL} from "@solana/web3.js";
 
 export default {
 	name: "Explorer",
@@ -377,6 +378,14 @@ export default {
 		async onWalletConnected() {
 			await this.shadow.initDrive(this.$store.state.wallet_addr);
 			this.driveIndex()
+			await this.shadow.getSHDWBalances(this.$store.state.wallet_addr).then(r => {
+				const token = r.value[0];
+				this.$store.commit('set_token_balance', {key: "shdw", value: token.account.data.parsed.info.tokenAmount.uiAmount.toFixed(4)});
+			})
+
+			await this.shadow.getSOLBalance(this.$store.state.wallet_addr).then(r => {
+			this.$store.commit('set_token_balance', {key: "sol", value: (r / LAMPORTS_PER_SOL).toFixed(4)});
+			})
 		}
 	},
 	mounted() {

@@ -8,6 +8,10 @@ export default new Vuex.Store({
     routerHistory: [],
     wallet_connected: false,
     wallet_addr: "",
+    balances: {
+      sol: 0,
+      shdw: 0
+    }
   },
   mutations: {
     set_wallet_connected(state, connected) {
@@ -16,6 +20,10 @@ export default new Vuex.Store({
     
     set_wallet_addr(state, addr) {
       state.wallet_addr = addr;
+    },
+
+    set_token_balance(state, currency) {
+      state.balances[currency.key] = currency.value
     },
 
     clear_wallet_addr(state) {
