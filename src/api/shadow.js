@@ -20,7 +20,7 @@ export class Shadow {
         await pk.connect();
 
         this.connection = new web3.Connection(
-            web3.clusterApiUrl('mainnet-beta'),
+            "https://ssc-dao.genesysgo.net/",
             'finalized',
         );
 
