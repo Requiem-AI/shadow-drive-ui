@@ -16,19 +16,18 @@
 					</li>
 				</ul>
 
-				<div class="nav-item me-auto">
-					{{ $store.state.balances['sol'] }} SOL
+				<div class="nav-item me-auto fw-bold d-none d-md-inline">
+					<img alt="solana token" class="sol-icon" src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" height="32px"> {{ $store.state.balances['sol'] }} SOL
 				</div>
 
-				<div class="nav-item me-auto">
-					{{ $store.state.balances['shdw'] }} SHDW
+				<div class="nav-item me-auto fw-bold d-none d-md-inline">
+					<img alt="shdw token" src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y/logo.png" height="32px"> {{ $store.state.balances['shdw'] }} SHDW
 				</div>
 
-				<div class="nav-item text-white small me-3">
+				<div class="nav-item text-white small me-3 mb-3 mb-md-0">
 					{{ $store.state.wallet_addr }}
 				</div>
-				<div class="auth d-none d-sm-block">
-
+				<div class="auth">
 					<button v-if="$store.state.wallet_connected" v-on:click="logout" class="btn btn-block btn-primary wow fadeIn"
 									data-animation-delay="0.3s"><i class="fa fa-arrow-right-from-bracket"></i> LOGOUT
 					</button>
@@ -73,5 +72,9 @@ export default {
 
 .navbar-brand, .navbar-dark .navbar-nav .nav-link, .nav-item {
 	color: white;
+}
+
+.sol-icon {
+	border-radius: 33px;
 }
 </style>

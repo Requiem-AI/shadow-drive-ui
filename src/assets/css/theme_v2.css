@@ -396,3 +396,10 @@ input.form-control:active::placeholder, input.form-control:focus::placeholder, t
     background: rgba(255, 255, 255, 0.68);
     border-radius: 10px;
 }
+
+
+.alert.alert-warning {
+    border: 2px solid orange;
+    background: transparent;
+    color: orange;
+}
