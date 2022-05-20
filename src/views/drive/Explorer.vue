@@ -409,13 +409,21 @@ export default {
 			this.driveIndex()
 			await this.shadow.getSHDWBalances(this.$store.state.wallet_addr).then(r => {
 				const token = r.value[0];
+				let amount
+				if (!token) {
+					amount = 0.0000;
+				} else {
+					amount = token.account.data.parsed.info.tokenAmount.uiAmount
+				}
+
 				this.$store.commit('set_token_balance', {
 					key: "shdw",
-					value: token.account.data.parsed.info.tokenAmount.uiAmount.toFixed(4)
+					value: amount.toFixed(4)
 				});
 			})
 
 			await this.shadow.getSOLBalance(this.$store.state.wallet_addr).then(r => {
+				console.log("SOL", r)
 				this.$store.commit('set_token_balance', {key: "sol", value: (r / LAMPORTS_PER_SOL).toFixed(4)});
 			})
 		}
