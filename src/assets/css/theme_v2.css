@@ -402,3 +402,36 @@ input.form-control:active::placeholder, input.form-control:focus::placeholder, t
     background: transparent;
     color: orange;
 }
+
+
+.btn-folder:hover {
+    border: 1px solid white;
+    color: white;
+}
+
+.btn-folder {
+    border: 1px solid grey;
+    font-size: 0.7em;
+    color: grey;
+    padding: 0 5px 0 5px;
+    transition: all	0.2s ease-in-out;
+}
+
+.folder span.active {
+    color: #0a9fb9;
+}
+
+.folder.active {
+    background-color: rgba(10, 159, 185, 0.7);
+    border: 1px solid white;
+}
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}

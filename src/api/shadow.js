@@ -97,15 +97,21 @@ export class Shadow {
         return this.drive.uploadFile(pk, data);
     }
 
+    async editFile(drive, fileUrl, data) {
+        const pk = new web3.PublicKey(drive)
+        console.log("Uploading file to drive: ", pk.toString())
+        return this.drive.editFile(pk, fileUrl, data);
+    }
+
     async uploadMultipleFiles(drive, daraArr) {
         const pk = new web3.PublicKey(drive)
         console.log("Uploading multiple file to drive: ", pk.toString(), daraArr)
         return this.drive.uploadMultipleFiles(pk, daraArr);
     }
 
-    async deleteFile(drive, filename) {
+    async deleteFile(drive, fileUrl) {
         const pk = new web3.PublicKey(drive)
-        return this.drive.deleteFile(pk, filename);
+        return this.drive.deleteFile(pk, fileUrl);
     }
 
     async setImmutable(drive) {

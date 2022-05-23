@@ -97,7 +97,8 @@
 						<div v-if="file.toBeDeleted" class="badge mx-md-2 bg-danger">Deleting</div>
 					</td>
 					<td class="text-right d-none d-md-table-cell">
-						<a :href="file.url" target="_blank" :download="file.name"><i class="fa fa-download mx-2 pointer"></i></a>
+<!--						<a target="_blank" :download="file.name" :href="file.url"><i class="fa fa-download mx-2 pointer"></i></a>-->
+						<a target="_blank" :download="file.name" :href="file.url"><i class="fa fa-share mx-2 pointer"></i></a>
 <!--						<i class="fa fa-edit mx-2 pointer"></i>-->
 						<a @click="copyLink(file)"><i class="fa fa-link mx-2 pointer"></i></a>
 						<a @click="onDeleteFile(file)"><i class="fa fa-trash mx-2 pointer"></i></a>
@@ -129,7 +130,7 @@
 		</div>
 
 
-		<FileView @close="hideFileInfo" v-if="showFileInfo" :file="activeFile"></FileView>
+		<FileView @share="copyLink(activeFile)" @delete="onDeleteFile(activeFile)" @close="hideFileInfo" v-if="showFileInfo" :file="activeFile"></FileView>
 	</div>
 </template>
 

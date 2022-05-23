@@ -17,6 +17,8 @@
 				<source :src="url">
 			</video>
 			<iframe :src="url" v-if="isViewableFile" width="100%" height="100%"></iframe>
+
+			<pre v-if="isDownloadFile" class="file-data-preview">{{fileData}}</pre>
 		</div>
 
 		<hr>
@@ -55,13 +57,22 @@
 			</div>
 		</div>
 
-				<div class="row text-center">
-					<div class="mt-2 col-6 col-md-4 col-lg-2 offset-lg-1"><button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-eye"></i> View</button></div>
-					<div class="mt-2 col-6 col-md-4 col-lg-2"><a download="true" class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-download"></i> Download</a></div>
-					<div class="mt-2 col-6 col-md-4 col-lg-2"><button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-edit"></i> Edit</button></div>
-					<div class="mt-2 col-6 col-md-4 col-lg-2"><button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-link"></i> Share</button></div>
-					<div class="mt-2 col-6 col-md-4 col-lg-2"><button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-trash"></i> Delete</button></div>
-				</div>
+		<div class="row text-center">
+<!--			<div class="mt-2 col-6 col-md-4 col-lg-2 offset-lg-1">-->
+<!--				<button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-eye"></i> View</button>-->
+<!--			</div>-->
+			<div class="mt-2 col-6 col-md-4 col-lg-2 offset-lg-2"><a :download="file.name" :href="file.url" class="btn btn-outline-secondary btn-block btn-sm"><i
+					class="fa fa-download"></i> Download</a></div>
+			<div class="mt-2 col-6 col-md-4 col-lg-2">
+				<button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-edit"></i> Edit</button>
+			</div>
+			<div class="mt-2 col-6 col-md-4 col-lg-2">
+				<button @click="$emit('share')" class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-link"></i> Share</button>
+			</div>
+			<div class="mt-2 col-6 col-md-4 col-lg-2">
+				<button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-trash"></i> Delete</button>
+			</div>
+		</div>
 
 
 	</div>
@@ -69,6 +80,7 @@
 
 <script>
 import md5 from 'md5';
+import axios from "axios";
 
 export default {
 	name: "FileView",
@@ -80,6 +92,7 @@ export default {
 	},
 	data() {
 		return {
+			fileData: null,
 			formats: {
 				image: {
 					"png": true,
@@ -100,15 +113,18 @@ export default {
 					"css": true,
 					"html": true,
 					"json": true,
-					"": true,
 				},
+				download: {
+					"_folder": true,
+					"": true,
+				}
 			}
 		}
 	},
 	computed: {
 		ext: function () {
 			const ext = this.file.name.split(".").pop();
-			if (ext === this.file.name)
+			if (ext === this.file.name && !this.formats.download[ext])
 				return "Unknown"
 
 			return ext.toLowerCase()
@@ -122,6 +138,13 @@ export default {
 		},
 		isViewableFile: function () {
 			return this.formats.file[this.ext]
+		},
+		/**
+		 * Used for files with annoying mime types
+		 * @returns {*}
+		 */
+		isDownloadFile: function () {
+			return this.formats.download[this.ext]
 		},
 		isHostable: function () {
 			return this.ext === "html"
@@ -162,6 +185,12 @@ export default {
 			return `${f} GB`;
 		},
 	},
+	mounted() {
+		if (this.isDownloadFile)
+			axios.get(this.url).then(r => {
+				this.fileData = r.data
+			})
+	}
 }
 </script>
 
@@ -189,6 +218,15 @@ iframe {
 	min-height: 400px;
 	height: 100%;
 	max-height: 500px;
+}
+
+.file-data-preview {
+	text-align: left;
+	color: white;
+	height: 100%;
+	min-height: 400px;
+	max-height: 500px;
+	background: rgba(0, 0, 0, 0.2);
 }
 
 .details {
@@ -225,7 +263,7 @@ img {
 }
 
 .file-load :first-child {
-	background: rgba(0,0,0,0.2);
+	background: rgba(0, 0, 0, 0.2);
 	padding: 1%;
 	border-radius: 7px;
 	max-height: 525px;

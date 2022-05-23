@@ -59,10 +59,6 @@ export default {
 	border-radius: 7px;
 }
 
-.folder.active {
-	background-color: rgba(10, 159, 185, 0.7);
-	border: 1px solid white;
-}
 
 .folder:hover {
 	background-color: rgba(10, 159, 185, 0.7);

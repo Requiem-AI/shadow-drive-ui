@@ -13,6 +13,8 @@
 					</div>
 					<div class="card-body">
 						<FolderContainer @active="onVisitDrive" :folders="drives" :activeDrive="activeDrive" :loading="loading"></FolderContainer>
+						<DriveFolderStructure v-if="structure !== null" @active="onFolderActive" :active-drive="activeDrive" :active-folder="activeFolder" :structure="structure"></DriveFolderStructure>
+						<button @click="expo" class="btn btn-outline-secondary btn-block btn-sm py-0" :disabled="true">Save Structure</button>
 					</div>
 				</div>
 
@@ -54,7 +56,7 @@
 				<div class="card pt-1">
 					<div class="card-body">
 						<FolderCreate @create="onDriveCreate" v-show="showCreateFolder" @close="hideCreate"></FolderCreate>
-						<DriveShow v-if="activeDrive !== ''" :show-file-info="showFileInfo" :files="files" :drive="currentDrive" :uploadFiles="uploadFiles" @file-info="onToggleFileInfo" @undelete="onDriveUnDelete" @edit="onDriveEdit" @resize="onDriveResize" @delete="onDriveDelete" @file-delete="onFileDelete" @freeze="onDriveFreeze" @addFile="onFileUpload" @upload="onUpload"></DriveShow>
+						<DriveShow v-if="activeDrive !== ''" :show-file-info="showFileInfo" :files="filterFiles" :drive="currentDrive" :uploadFiles="uploadFiles" @file-info="onToggleFileInfo" @undelete="onDriveUnDelete" @edit="onDriveEdit" @resize="onDriveResize" @delete="onDriveDelete" @file-delete="onFileDelete" @freeze="onDriveFreeze" @addFile="onFileUpload" @upload="onUpload"></DriveShow>
 
 						<div class="my-5 text-center" v-if="activeDrive === '' && !showCreateFolder">
 							<i class="">No drive selected</i>
@@ -79,20 +81,26 @@ import FolderContainer from "../../components/drive/FolderContainer";
 import FolderCreate from "../../components/drive/FolderCreate";
 import DriveShow from "../../components/drive/DriveShow";
 import {LAMPORTS_PER_SOL} from "@solana/web3.js";
+import DriveFolderStructure from "../../components/drive/DriveFolderStructure";
+import {DriveConfig, FolderStructure} from "../../api/folder";
+import axios from "axios"
 
 export default {
 	name: "Explorer",
-	components: {DriveShow, FolderCreate, FolderContainer},
+	components: {DriveFolderStructure, DriveShow, FolderCreate, FolderContainer},
 	data() {
 		return {
 			shadow: null,
 			loading: false,
 			showCreateFolder: false,
 			showFileInfo: false,
+			activeFolder: "_root",
 			activeDrive: "",
 			drives: [],
 			files: {},
 			uploadFiles: [],
+			folderStructure: {},
+			structure: new FolderStructure(new DriveConfig()),
 		}
 	},
 	watch: {
@@ -104,6 +112,23 @@ export default {
 	computed: {
 		currentDrive: function () {
 			return this.drives.find(drive => drive.publicKey.toString() === this.activeDrive);
+		},
+
+		filterFiles: function() {
+			if (this.activeFolder === "_root" || this.activeFolder === "")
+				return this.files;
+
+			const filtered = {};
+			const includes = this.structure.getFiles(this.activeFolder)
+			for(let i = 0;i<includes.length;i++) {
+				const key = includes[i]
+				if (!this.files[key])
+					continue
+
+				filtered[key] = this.files[key]
+			}
+
+			return filtered
 		}
 	},
 	methods: {
@@ -113,6 +138,28 @@ export default {
 		},
 		hideCreate() {
 			this.showCreateFolder = false;
+		},
+
+		expo: function() {
+			const folderOut = this.structure.export()
+			console.log(folderOut)
+			const url = `https://shdw-drive.genesysgo.net/${this.activeDrive}/_folder`
+			const file = new File([folderOut], "_folder")
+
+			let promise;
+			if (this.structure.folderHasFile("_root", "_folder")) {
+				promise = this.shadow.editFile(this.activeDrive, url, file)
+			} else {
+				promise = this.shadow.uploadFile(this.activeDrive, file)
+			}
+
+			promise.then(() => {
+				this.$toastr.s("Structure saved")
+			}).catch((err) => {
+				console.log("Structure save error", err);
+				this.$toastr.e(err.message);
+			});
+
 		},
 
 		onToggleFileInfo(v) {
@@ -272,12 +319,19 @@ export default {
 			});
 		},
 
+		onFolderActive(folder) {
+			this.activeFolder = folder;
+		},
+
 		onVisitDrive(drive) {
 			console.log("Setting active drive", drive);
 			this.activeDrive = drive
 			this.uploadFiles = [];
+			this.activeFolder = "_root";
 			this.files = {};
+			this.showFileInfo = false;
 			this.indexFiles();
+			this.pingBlokHost();
 		},
 
 		indexFiles() {
@@ -290,6 +344,13 @@ export default {
 			// 	})
 			// 	this.onDriveInfo();
 			// });
+		},
+
+		//Ensure our drive is initialized on blok host (temp while chain listener built)
+		pingBlokHost() {
+			axios.post("https://webhost2.alphabatem.com/cid/register", {
+				address: this.activeDrive,
+			})
 		},
 
 		onDriveEdit() {
@@ -335,15 +396,16 @@ export default {
 			});
 		},
 		onFileDelete(f) {
+			console.log("Deleting file: ", this.activeDrive, f.url)
 			this.loading = true;
-			this.shadow.deleteFile(this.activeDrive, f).then((resp) => {
+			this.shadow.deleteFile(this.activeDrive, f.url).then((resp) => {
 				console.log("File deleted", resp);
 				this.$toastr.s("File deleted");
 				this.indexFiles();
 
 			}).catch((err) => {
-				console.log("File delete error", err);
-				this.$toastr.e(err.message);
+				console.log("File delete error", err.message);
+				this.$toastr.e("Unable to delete file");
 			}).finally(() => {
 				this.loading = false;
 			});
@@ -395,10 +457,24 @@ export default {
 			});
 		},
 
+		getDriveFolderConfig() {
+			axios.get(`https://shdw-drive.genesysgo.net/${this.activeDrive}/_folder`).then((r) => {
+				this.structure = new FolderStructure(new DriveConfig(r.data))
+			}).catch((e) => {
+				console.log("getDriveFolderConfig", e)
+				this.structure = new FolderStructure(new DriveConfig({}))
+			})
+		},
+
 		onDriveInfo() {
 			this.shadow.fileInfo(this.currentDrive).then((r) => {
-
+				let folderCalled = false;
 				r.forEach((f) => {
+					if (!folderCalled && f.name === "_folder") {
+						this.getDriveFolderConfig()
+						folderCalled = true
+					}
+
 					// this.files[f.name] = {
 					// 	name: f.name,
 					// 	size: f.size.toString(),
@@ -415,6 +491,10 @@ export default {
 						url: `https://shdw-drive.genesysgo.net/${f.storageAccount.toString()}/${f.name}`
 					})
 				})
+
+				if (!folderCalled) {
+					this.structure = new FolderStructure(new DriveConfig()) //Clear folders (not present in req)
+				}
 
 				console.log("File Info:", r)
 

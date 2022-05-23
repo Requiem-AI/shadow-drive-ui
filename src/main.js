@@ -14,8 +14,8 @@ import "@/assets/css/theme_v2.css"
 Vue.config.productionTip = false;
 
 Vue.use(VueToastr, {
-    defaultProgressBar: false,
-    defaultPosition: "toast-top-right"
+    defaultProgressBar: true,
+    defaultPosition: "toast-bottom-left"
 
     /* OverWrite Plugin Options if you need */
 });
