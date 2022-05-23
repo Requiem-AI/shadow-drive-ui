@@ -35,7 +35,9 @@
 			<div class="col">
 				<p>Owner(s): </p>
 				<code>{{ drive.account.owner1.toString() }}</code>
-				<code v-if="drive.account.owner2.toString() !== drive.account.owner1.toString()">{{drive.account.owner2.toString() }}</code>
+				<code v-if="drive.account.owner2.toString() !== drive.account.owner1.toString()">{{
+						drive.account.owner2.toString()
+					}}</code>
 			</div>
 			<div class="col">
 				<p>Creation Time: </p>
@@ -65,13 +67,47 @@
 
 		<hr>
 
-		<div class="file-container row mt-3" v-if="useThumbnails">
-			<div class="col" v-for="(file,key) in files" :key="key">
-				<FileThumbnail @delete="onDeleteFile" :file="file"></FileThumbnail>
-			</div>
+		<!--		<div class="file-container row mt-3" v-if="tableView">-->
+		<!--			<div class="col" v-for="(file,key) in files" :key="key">-->
+		<!--				<FileThumbnail @delete="onDeleteFile" :file="file"></FileThumbnail>-->
+		<!--			</div>-->
+		<!--		</div>-->
+
+		<div class="file-container row mt-3" v-if="tableView">
+			<table class="table table-hover text-white">
+				<thead>
+				<tr class="text-left">
+<!--					<th>-</th>-->
+					<th>Name</th>
+					<th>Size</th>
+					<th>Type</th>
+					<th>Status</th>
+					<th class="d-none d-md-table-cell"></th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr v-for="(file,key) in files" :key="key" class="">
+<!--					<td>-</td>-->
+					<td class="pointer" @click="setActiveFile(file)">{{ file.name }}</td>
+					<td class="pointer" @click="setActiveFile(file)">{{ toSize(file.size) }}</td>
+					<td class="pointer" @click="setActiveFile(file)">{{ guessType(file.name) }}</td>
+					<td class="pointer" @click="setActiveFile(file)">
+						<div v-if="!file.immutable" class="badge bg-secondary">Editable</div>
+						<div v-if="file.immutable" class="badge bg-info">Immutable</div>
+						<div v-if="file.toBeDeleted" class="badge mx-md-2 bg-danger">Deleting</div>
+					</td>
+					<td class="text-right d-none d-md-table-cell">
+						<a :href="file.url" target="_blank" :download="file.name"><i class="fa fa-download mx-2 pointer"></i></a>
+<!--						<i class="fa fa-edit mx-2 pointer"></i>-->
+						<a @click="copyLink(file)"><i class="fa fa-link mx-2 pointer"></i></a>
+						<a @click="onDeleteFile(file)"><i class="fa fa-trash mx-2 pointer"></i></a>
+					</td>
+				</tr>
+				</tbody>
+			</table>
 		</div>
 
-		<div class="file-container row mt-3" v-if="!useThumbnails">
+		<div class="file-container row mt-3" v-if="!tableView">
 			<div class="col-12" :key="key" v-for="(file,key) in files">
 				<FileRow @delete="onDeleteFile" :file="file" :drive="drive"></FileRow>
 			</div>
@@ -88,43 +124,26 @@
 		</div>
 
 		<div class="row mt-3">
-			<div class="text-center">
-				<div ref="uploader" class="upload-container">
-					<form enctype="multipart/form-data">
-						<input id="file-upload" ref="file" type="file" multiple="true" class="file-upload" accept=".png,.jpg,.jpeg,.gif" @change="filesChange">
-					</form>
-					<p class="mt-4">Drag to upload</p>
-				</div>
-
-				<div class="row mt-3" v-show="uploadFiles.length > 0">
-					<div class="col-12 my-1" v-for="(file,key) in uploadFiles" :key="key">
-						<FileUpload @remove="uploadFiles.splice(key,1)" :request="file"></FileUpload>
-					</div>
-
-					<div class="col-12 text-center my-3">
-						<p class="small mb-0">Total Upload Size: {{ (uploadSize / 1024 / 1024).toFixed(2) }} MB</p>
-						<p v-show="!canUpload" class="small text-danger">Upload size exceeds available size!</p>
-						<button :disabled="!canUpload" class="btn btn-primary" @click="onUploadClick">Upload</button>
-					</div>
-				</div>
-
-			</div>
+			<FileUpload :files="files" :drive="drive" :upload-files="uploadFiles" @upload="onUploadClick"
+									@addFile="onFileAdded"></FileUpload>
 		</div>
 
+
+		<FileView @close="hideFileInfo" v-if="showFileInfo" :file="activeFile"></FileView>
 	</div>
 </template>
 
 <script>
-import FileThumbnail from "./FileThumbnail";
 import DriveStorage from "./DriveStorage";
 import DriveLock from "./DriveLock";
-import FileUpload from "./FileUpload";
 import DriveStorageEdit from "./DriveStorageEdit";
 import FileRow from "./FileRow";
+import FileUpload from "./FileUpload";
+import FileView from "./FileView";
 
 export default {
 	name: "DriveShow",
-	components: {FileRow, DriveStorageEdit, FileUpload, DriveStorage, FileThumbnail, DriveLock},
+	components: {FileView, FileUpload, FileRow, DriveStorageEdit, DriveStorage, DriveLock},
 	props: {
 		drive: {
 			type: Object,
@@ -140,84 +159,93 @@ export default {
 			default: function () {
 				return [];
 			}
+		},
+
+		showFileInfo: {
+			type: Boolean,
+			default: false,
 		}
 	},
 	data() {
 		return {
-			useThumbnails: false,
+			tableView: true,
 			edit: false,
 			showInfo: false,
+			activeFile: {name: ''},
 		}
 	},
 	computed: {
 		createdAt: function () {
 			return new Date(this.drive.account.creationTime).toLocaleString();
 		},
-
-		uploadSize: function () {
-			return this.uploadFiles.reduce((acc, file) => {
-				return acc + file.file.size;
-			}, 0);
-		},
-
-		canUpload: function () {
-			return this.uploadSize < this.drive.account.storageAvailable;
-		}
 	},
 	methods: {
-		onDragOver(e) {
-			e.stopPropagation();
-			e.preventDefault()
-			e.dataTransfer.effectAllowed = "move";
-			this.visible = true;
+		copyLink: function(f) {
+			navigator.clipboard
+					.writeText(f.url)
+					.then(() => {
+						this.$toastr.s(`Copied to clipboard.`);
+					})
+					.catch((err) => {
+						this.$toastr.e(err, `Error copying text to clipboard`);
+					});
 		},
 
-		onDragLeave(e) {
-			if (e.pageX !== 0 || e.pageY !== 0) { //Stops flickering
-				return false;
-			}
-
-			e.stopPropagation();
-			e.preventDefault()
-			// console.log('onDragLeave', e);
-			this.visible = false;
-		},
-		filesChange: function () {
-			for(let i = 0; i< this.$refs.file.files.length;i++) {
-				this.onFile(this.$refs.file.files[i])
-			}
+		setActiveFile: function(f) {
+			console.log("Setting active file: ", f)
+			this.activeFile = f;
+			this.$emit("file-info", true)
 		},
 
-		onFile:function(file) {
-			if (!file) {
-				return
+		hideFileInfo:function() {
+			this.$emit("file-info", false)
+		},
+
+		toSize: function (s) {
+			if (s < 1024) {
+				return `${s} B`;
 			}
-			console.log("File dropped", file)
-			// handle file changes
+			if (s < 1048576) {
+				const f = (s / 1024).toFixed(2)
+				return `${f} KB`;
+			}
+			if (s < 1073741824) {
+				const f = (s / 1024 / 1024).toFixed(2)
+				return `${f} MB`;
+			}
+			const f = (s / 1024 / 1024 / 1024).toFixed(2)
+			return `${f} GB`;
+		},
 
-			if (file.name.length > 32) {
-				const ext = "." + file.name.split('.').pop();
-				const shorterName = file.name.substr(0, 32 - ext.length) + ext
-				Object.defineProperty(file, 'name', {
-					writable: true,
-					value: shorterName
-				});
+		guessType: function (filename) {
+			const ext = filename.split('.').pop();
+
+			switch (ext.toLowerCase()) {
+				case "png":
+				case "jpg":
+				case "jpeg":
+				case "gif":
+				case "svg":
+					return "Image"
+
+				case "css":
+					return "Stylesheet"
+
+				case "json":
+				case "md":
+				case "config":
+				case "env":
+				case "html":
+					return "Text"
+
+				case "map":
+				case "js":
+				case "ts":
+				case "tsx":
+					return "Script"
 			}
 
-			const alreadyExists = this.uploadFiles.filter((f) => f.file.name === file.name)
-			const alreadyUploaded = this.files.filter((f) => f.name === file.name && f.status !== "pending")
-
-			if (alreadyUploaded.length > 0 || alreadyExists.length > 0) {
-				this.$toastr.e("File already uploaded")
-				return
-			}
-
-			// file.status = 'pending'
-			// file.uri = URL.createObjectURL(file);
-			// file.progress = 0
-			// file.formData = formData
-
-			this.$emit("addFile", file)
+			return `File`
 		},
 
 		onEdit: function (data) {
@@ -229,17 +257,13 @@ export default {
 			this.$emit("upload")
 		},
 
+		onFileAdded: function (f) {
+			this.$emit("addFile",f)
+		},
+
 		onDeleteFile: function (f) {
 			this.$emit("file-delete", f)
 		},
-	},
-	mounted() {
-		this.$refs.uploader.addEventListener('dragover', this.onDragOver);
-		this.$refs.uploader.addEventListener('dragleave', this.onDragLeave);
-	},
-	beforeDestroy() {
-		this.$refs.uploader.removeEventListener('dragover', this.onDragOver)
-		this.$refs.uploader.removeEventListener('dragleave', this.onDragLeave)
 	},
 }
 </script>
@@ -258,37 +282,15 @@ export default {
 	cursor: pointer;
 }
 
-.upload-container {
-	position: relative;
-	min-height: 100px;
+table {
+	color: white;
+	font-weight: normal;
+	font-size: 0.9em;
 }
 
-.upload-container {
-	background: rgba(0, 0, 0, 0.3);
-	border: 3px dashed white;
-}
-
-form {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-}
-
-.file-upload {
-	margin: 1%;
-	content: '';
-	display: inline-block;
-	cursor: pointer;
-	height: 100%;
-	width: 100%;
-	opacity: 0;
-
-	background: transparent;
-	transform: none;
-	text-align: center;
-	vertical-align: center;
+.table-hover > tbody > tr:hover > *, tr:hover {
+	background: rgba(255, 255, 255, 0.1);
+	color: white;
 }
 
 ::-webkit-file-upload-button, ::file-selector-button {

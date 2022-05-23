@@ -53,13 +53,13 @@ export default {
 
 		getInfo: function () {
 			axios.post("https://shadow-storage.genesysgo.net/get-object-data", {location: this.url}).then((r) => {
-				console.log("file info", r.data.file_data)
+				console.log("file info", r.data)
 				this.info = r.data.file_data;
 			})
 		}
 	},
 	mounted: function () {
-		// this.getInfo()
+		this.getInfo()
 	}
 }
 </script>

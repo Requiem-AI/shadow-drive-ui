@@ -14,11 +14,11 @@
 					<div class="card-body">
 						<FolderContainer @active="onVisitDrive" :folders="drives" :activeDrive="activeDrive" :loading="loading"></FolderContainer>
 					</div>
+				</div>
 
-					<div class="card-footer text-center">
-
-						<div class="balances row mb-3">
-
+				<div class="card mt-2">
+					<div class="card-body text-center">
+						<div class="balances row text-center">
 							<div class="col-12" v-show="$store.state.balances['shdw'] < 0.02">
 								<div class="alert p-0 alert-warning">Not Enough SHDW</div>
 							</div>
@@ -34,15 +34,17 @@
 								<img alt="shdw token" src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y/logo.png" height="32px"> {{ $store.state.balances['shdw'] }} SHDW
 							</div>
 						</div>
+					</div>
 
-						<p class="small footer">Created With ❤️ By <a target="_blank" href="https://twitter.com/alpha_batem">@AlphaBatem</a>
-						</p>
-						<p class="mb-0 small">
-							<a target="_blank" href="https://solana.com">Solana</a> |
-							<a target="_blank" href="https://alphabatem.com">AlphaBatem</a> |
-							<a target="_blank" href="https://metaverse.alphabatem.com">Metaverse</a> |
-							<a target="_blank" href="https://genesysgo.com/">GenesysGo</a>
-						</p>
+						<div class="card-footer text-center">
+							<p class="small footer">Created With ❤️ By <a target="_blank" href="https://twitter.com/alpha_batem">@AlphaBatem</a>
+							</p>
+							<p class="mb-0 small">
+								<a target="_blank" href="https://solana.com">Solana</a> |
+								<a target="_blank" href="https://alphabatem.com">AlphaBatem</a> |
+								<a target="_blank" href="https://metaverse.alphabatem.com">Metaverse</a> |
+								<a target="_blank" href="https://genesysgo.com/">GenesysGo</a>
+							</p>
 					</div>
 				</div>
 
@@ -52,7 +54,7 @@
 				<div class="card pt-1">
 					<div class="card-body">
 						<FolderCreate @create="onDriveCreate" v-show="showCreateFolder" @close="hideCreate"></FolderCreate>
-						<DriveShow v-if="activeDrive !== ''" :files="files" :drive="currentDrive" :uploadFiles="uploadFiles" @undelete="onDriveUnDelete" @edit="onDriveEdit" @resize="onDriveResize" @delete="onDriveDelete" @file-delete="onFileDelete" @freeze="onDriveFreeze" @addFile="onFileUpload" @upload="onUpload"></DriveShow>
+						<DriveShow v-if="activeDrive !== ''" :show-file-info="showFileInfo" :files="files" :drive="currentDrive" :uploadFiles="uploadFiles" @file-info="onToggleFileInfo" @undelete="onDriveUnDelete" @edit="onDriveEdit" @resize="onDriveResize" @delete="onDriveDelete" @file-delete="onFileDelete" @freeze="onDriveFreeze" @addFile="onFileUpload" @upload="onUpload"></DriveShow>
 
 						<div class="my-5 text-center" v-if="activeDrive === '' && !showCreateFolder">
 							<i class="">No drive selected</i>
@@ -86,9 +88,10 @@ export default {
 			shadow: null,
 			loading: false,
 			showCreateFolder: false,
+			showFileInfo: false,
 			activeDrive: "",
 			drives: [],
-			files: null,
+			files: {},
 			uploadFiles: [],
 		}
 	},
@@ -112,6 +115,10 @@ export default {
 			this.showCreateFolder = false;
 		},
 
+		onToggleFileInfo(v) {
+			console.log("Toggle file info", v)
+			this.showFileInfo =v;
+		},
 
 		onDriveCreate(cfg) {
 			this.loading = true;
@@ -134,6 +141,7 @@ export default {
 		 * @param data
 		 */
 		onFileUpload(data) {
+			console.log("On file upload",data)
 
 			if (data.name.length > 32) {
 				const ext = "." + data.name.split('.').pop();
@@ -268,14 +276,20 @@ export default {
 			console.log("Setting active drive", drive);
 			this.activeDrive = drive
 			this.uploadFiles = [];
-			this.files = null;
+			this.files = {};
 			this.indexFiles();
 		},
 
 		indexFiles() {
-			this.shadow.indexFiles(this.activeDrive).then((r) => {
-				this.files = r.data.keys
-			});
+			this.onDriveInfo();
+			// this.shadow.indexFiles(this.activeDrive).then((r) => {
+			// 	r.data.keys.forEach((key) => {
+			// 		this.files[key] = {
+			// 			name: key
+			// 		}
+			// 	})
+			// 	this.onDriveInfo();
+			// });
 		},
 
 		onDriveEdit() {
@@ -379,6 +393,36 @@ export default {
 			}).finally(() => {
 				this.loading = false;
 			});
+		},
+
+		onDriveInfo() {
+			this.shadow.fileInfo(this.currentDrive).then((r) => {
+
+				r.forEach((f) => {
+					// this.files[f.name] = {
+					// 	name: f.name,
+					// 	size: f.size.toString(),
+					// 	immutable: f.immutable,
+					// 	toBeDeleted: f.toBeDeleted,
+					// }
+
+					this.$set(this.files, f.name, {
+						name: f.name,
+						size: f.size.toString(),
+						immutable: f.immutable,
+						toBeDeleted: f.toBeDeleted,
+						storageAccount: f.storageAccount.toString(),
+						url: `https://shdw-drive.genesysgo.net/${f.storageAccount.toString()}/${f.name}`
+					})
+				})
+
+				console.log("File Info:", r)
+
+
+			}).catch((err) => {
+				console.log("DriveShow error", err);
+				this.$toastr.e("Unable to load drive");
+			})
 		},
 
 		driveShow(id) {

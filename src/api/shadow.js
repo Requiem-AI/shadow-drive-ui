@@ -1,19 +1,17 @@
-import {ShdwDrive} from "@shadow-drive/sdk";
-import * as web3 from "@solana/web3.js";
+import {ShdwDrive} from "@alphabatem/shadow-drive-sdk";
 import {PhantomWalletAdapter} from '@solana/wallet-adapter-wallets';
 import axios from 'axios'
-// import { TOKEN_PROGRAM_ID  } from "@solana/spl-token";
+import {BN, web3} from "@project-serum/anchor";
 
 export class Shadow {
     connection;
 
     program = new web3.PublicKey("SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y");
+    driveProgram = new web3.PublicKey("2e1wdyNhUvE76y6yUCvah2KaviavMJYKoRun8acMRBZZ");
 
     drive = null
 
-
-    constructor() {
-    }
+    wallet;
 
     async initDrive() {
         const pk = new PhantomWalletAdapter();
@@ -25,7 +23,8 @@ export class Shadow {
         );
 
         console.log(pk)
-        this.drive = await new ShdwDrive(this.connection, pk._wallet).init();
+        this.wallet = pk._wallet;
+        this.drive = await new ShdwDrive(this.connection, this.wallet).init();
         console.log("Connected to shadow drive");
     }
 
@@ -36,7 +35,7 @@ export class Shadow {
 
     async getSHDWBalances(walletAddr) {
         const pk = new web3.PublicKey(walletAddr)
-        return this.connection.getParsedTokenAccountsByOwner(pk, { mint: this.program })
+        return this.connection.getParsedTokenAccountsByOwner(pk, {mint: this.program})
     }
 
 
@@ -112,6 +111,23 @@ export class Shadow {
     async setImmutable(drive) {
         const pk = new web3.PublicKey(drive)
         return this.drive.setImmutable(pk);
+    }
+
+    async fileInfo(drive) {
+        let fileAccounts = []
+        let fileCounter = new BN(drive.account.initCounter).toNumber() - 1;
+
+        for (let counter = 0; counter <= fileCounter; counter++) {
+            let fileSeed = new BN(counter).toTwos(64).toArrayLike(Buffer, "le", 4);
+
+            let [file] = await web3.PublicKey.findProgramAddress(
+                [drive.publicKey.toBytes(), fileSeed],
+                this.driveProgram)
+
+            fileAccounts.push(file)
+        }
+
+        return await this.drive.getProgram().account.file.fetchMultiple(fileAccounts)
     }
 
     toSizeDenom(size, denom) {
