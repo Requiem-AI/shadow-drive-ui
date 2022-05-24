@@ -1,24 +1,23 @@
 <template>
-	<div class="folder">
-		<span :class="isActive" class="noselect" @click="onFolderClick"><i class="fa fa-folder"></i></span> <span @click="onFolderNameClick" class="noselect" :class="isActive">{{ folder }}</span>
-
-		<div class="inner mx-3 mb-2" :style="showClass">
-			<DirectoryFolder :active="active" @active="onFolderActive" @add-folder="onFolderAdd" :folder="folder" :structure="structure" :key="`${folder}-folder-${key}`" v-for="(folder,key) in subfolders"></DirectoryFolder>
-
-			<div v-for="(file,key) in files" :key="`${folder}-file-${key}`">
-				<DirectoryFile :structure="structure" :file="file"></DirectoryFile>
-			</div>
-
+	<div class="folder-container">
+		<div v-if="!hasSubfolders">
+			<i class="small">No folders</i>
+		</div>
+		<!--		<span :class="isActive" class="noselect" @click="onFolderClick"><i class="fa fa-folder"></i></span> <span @click="onFolderNameClick" class="noselect" :class="isActive">{{ folder }}</span>-->
+		<div class="inner mb-2" :style="showClass">
+			<DirectoryFolder class="ml-1" :active="active" @active="onFolderActive" @add-folder="onFolderAdd" :folder="folder" :structure="structure" :key="`${folder}-folder-${key}`"
+					v-for="(folder,key) in subfolders"></DirectoryFolder>
 			<div v-show="isActive" @click="addFolder(folder)" class="btn btn-folder">NEW</div>
 		</div>
 	</div>
 </template>
 
 <script>
-import DirectoryFile from "./DirectoryFile";
+import DirectoryFolder from "./DirectoryFolder";
+
 export default {
-	name: "DirectoryFolder",
-	components: {DirectoryFile},
+	name: "DirectoryFolderList",
+	components: {DirectoryFolder},
 	props: {
 		structure: {
 			required: true,
@@ -45,7 +44,7 @@ export default {
 			return this.structure.getFolders(this.folder)
 		},
 
-		files: function() {
+		files: function () {
 			return this.structure.getFiles(this.folder)
 		},
 
@@ -76,7 +75,7 @@ export default {
 			this.onFolderNameClick()
 		},
 
-		onFolderNameClick: function() {
+		onFolderNameClick: function () {
 			this.$emit("active", this.folder)
 		},
 
@@ -93,11 +92,12 @@ export default {
 
 <style scoped>
 .inner {
-	/*margin-left: 5%;*/
 	transition: all 0.2s ease-in-out;
 }
 
-.folder {
-	cursor: pointer;
+.folder-container {
+	max-height: 100px;
+	overflow-y: scroll;
+	border-bottom: 1px solid rgba(0,0,0,0.4);
 }
 </style>

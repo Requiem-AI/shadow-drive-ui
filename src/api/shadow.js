@@ -99,7 +99,7 @@ export class Shadow {
 
     async editFile(drive, fileUrl, data) {
         const pk = new web3.PublicKey(drive)
-        console.log("Uploading file to drive: ", pk.toString())
+        console.log("Uploading EDITED file to drive: ", pk.toString())
         return this.drive.editFile(pk, fileUrl, data);
     }
 

@@ -1,115 +1,200 @@
 export class DriveConfig {
-    folders = {
-        // "0x0": new Folder("0x0", ["File-0x1"], ["0x3"]),
-        // "0x1": new Folder("0x1", ["File-0x1"], []),
-        // "0x2": new Folder("0x2", ["File-0x1"], []),
-        // "0x3": new Folder("0x3", ["File-0x1"], []),
-        // "0x4": new Folder("0x4", ["File-0x1"], []),
-        // "0x5": new Folder("0x5", ["File-0x1"], []),
-        // "0x6": new Folder("0x6", ["File-0x1"], ["0x4", "0x1"]),
-    }
+	folders = {
+		// "0x0": new Folder("0x0", ["File-0x1"], ["0x3"]),
+		// "0x1": new Folder("0x1", ["File-0x1"], []),
+		// "0x2": new Folder("0x2", ["File-0x1"], []),
+		// "0x3": new Folder("0x3", ["File-0x1"], []),
+		// "0x4": new Folder("0x4", ["File-0x1"], []),
+		// "0x5": new Folder("0x5", ["File-0x1"], []),
+		// "0x6": new Folder("0x6", ["File-0x1"], ["0x4", "0x1"]),
+	}
 
-    root = new Folder("root", [], [])
+	root = "_root"
 
+	constructor(data = "") {
+		if (data !== "") {
+			console.log("Building drive config: ", data)
+			this.import(data)
+			if (data.root) {
+				this.root = typeof data.root === "string" ? data.root : data.root.name;
+				// console.log("Root set: ", this.root)
+			}
+		}
 
-    constructor(data = "") {
-        if (data === "")
-            return
+		//If root folder doesnt exist, create it
+		if (!this.folders[this.root]) {
+			this.folders[this.root] = new Folder(this.root, [], [])
+		}
+	}
 
-        this.root = data.root
-        this.folders = data.folders
-    }
+	import(data) {
+		const folders = data.folders || {}
+		// console.log("Importing: ", data, folders)
 
-    export() {
-        return JSON.stringify(this)
-    }
+		const ok = Object.keys(folders)
+		for (let i = 0; i < ok.length; i++) {
+			const key = ok[i]
+			const f = folders[key]
+			this.folders[key] = new Folder(f.name, f.files, f.folders)
+		}
+		// console.log("Imported", this.folders)
+	}
 
-    getRoot() {
-        return this.root;
-    }
+	export() {
+		return JSON.stringify(this)
+	}
 
-    addFile(folderName, file) {
-        if (this.folders[folderName].files.includes(file))
-            return
+	getRoot() {
+		if (!this.folders[this.root])
+			return new Folder("DEFAULT", [], [])
 
-        this.folders[folderName].files.push(file)
-    }
+		return this.folders[this.root];
+	}
 
-    addFolder(folderName, folder) {
-        if (this.folders[folderName].folders.includes(folder))
-            return
+	addFile(folderName, file) {
+		if (this.folders[folderName].files.includes(file))
+			return
 
-        this.folders[folderName].folders.push(folder)
-    }
+		this.folders[folderName].files.push(file)
+	}
+
+	addFolder(parent, folderName) {
+		console.log("Adding", folderName, parent, Object.keys(this.folders))
+
+		// if (!this.folders[parent])
+		// 	this.folders[parent] = new Folder()
+
+		const ok = Object.keys(this.folders)
+		for(let i=0;i<ok.length;i++) {
+			if (this.folders[ok[i]].folders.includes(folderName))
+				return "Name in use";
+		}
+
+		if (this.folders[parent].folders.includes(folderName))
+			return "Already in folder";
+
+		this.folders[folderName] = new Folder(folderName, [], [])
+		this.folders[parent].addFolder(folderName)
+
+		return null;
+	}
 }
 
 
 export class FolderStructure {
-    cfg
-
-    constructor(cfg) {
-        this.cfg = cfg
-    }
+	cfg
 
 
-    buildFromZip(zip) {
-        console.log("Building Zip: ", zip)
-    }
+	currentFolder = ""
+	skipNextAdd = false;
+	history = [];
 
-    createFolder(folderName, files = []) {
-        const f = new Folder(folderName, files)
-        this.cfg.folders[f.name] = f
-    }
+	constructor(cfg) {
+		console.log("Building folder structure", cfg.export())
+		this.cfg = cfg
+	}
 
-    getRoot() {
-        return this.cfg.getRoot();
-    }
+	reset() {
+		this.cfg = new DriveConfig("")
+		this.history = [];
+	}
 
-    getFiles(folder = "") {
-        if (folder === "_root" || folder === "")
-            return this.getRoot().files
+	buildFromZip(zip) {
+		console.log("Building Zip: ", zip)
+	}
 
-        if (!this.cfg.folders[folder]) {
-            console.error("Unable to find files for folder: ", folder)
-        }
+	getRoot() {
+		return this.cfg.getRoot();
+	}
 
-        return this.cfg.folders[folder].files
-    }
+	getRootName() {
+		return this.cfg.root;
+	}
 
-    getFolders(folder = "") {
-        if (folder === "_root" || folder === "")
-            return this.getRoot().folders
+	getFolderNames() {
+		return Object.keys(this.cfg.folders)
+	}
 
-        return this.cfg.folders[folder].folders
-    }
+	getFiles(folder = "") {
+		if (folder === this.getRootName() || folder === "")
+			return this.getRoot().files
+
+		if (!this.cfg.folders[folder]) {
+			console.error("Unable to find files for folder: ", folder)
+			return [];
+		}
+
+		return this.cfg.folders[folder].files
+	}
+
+	getFolders(folder = "") {
+		if (folder === this.getRootName() || folder === "")
+			return this.getRoot().folders
+
+		if (!this.cfg.folders[folder]) {
+			console.error("Unable to find folder: ", folder)
+			return [];
+		}
+
+		return this.cfg.folders[folder].folders
+	}
+
+	getHistory() {
+		return this.history;
+	}
+
+	popHistory() {
+		const h = this.history.pop() || "";
+		if (h !== "") {
+			this.skipNextAdd = true;
+		}
+		return h
+	}
+
+	setActive(folderName) {
+		this.addHistory(this.currentFolder)
+		this.currentFolder = folderName
+	}
+
+	addHistory(folderName) {
+		if (this.skipNextAdd) {
+			this.skipNextAdd = false;
+			return
+		}
+
+		console.log("Adding folder history: ", folderName)
+		this.history.push(folderName)
+		if (this.history.length > 20) {
+			this.history = this.history.slice(this.history.length - 20)
+		}
+	}
 
 
-    folderHasFile(folder, file) {
-        const files = this.getFiles(folder)
-        return files.includes(file)
-    }
+	folderHasFile(folder, file) {
+		return this.getFiles(folder).includes(file)
+	}
 
-    export() {
-        return this.cfg.export()
-    }
+	export() {
+		return this.cfg.export()
+	}
 }
 
 export class Folder {
-    name
-    files = [];
-    folders = [];
+	name
+	files = [];
+	folders = [];
 
-    constructor(name, files, folders = []) {
-        this.name = name;
-        this.files = files;
-        this.folders = folders;
-    }
+	constructor(name, files, folders = []) {
+		this.name = name;
+		this.files = files;
+		this.folders = folders;
+	}
 
-    addFile(file) {
-        this.files.push(file)
-    }
+	addFile(file) {
+		this.files.push(file)
+	}
 
-    addFolder(folder) {
-        this.folders.push(folder)
-    }
+	addFolder(folder) {
+		this.folders.push(folder)
+	}
 }

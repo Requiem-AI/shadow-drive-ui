@@ -13,42 +13,25 @@
 					</div>
 					<div class="card-body">
 						<FolderContainer @active="onVisitDrive" :folders="drives" :activeDrive="activeDrive" :loading="loading"></FolderContainer>
-						<DriveFolderStructure v-if="structure !== null" @active="onFolderActive" :active-drive="activeDrive" :active-folder="activeFolder" :structure="structure"></DriveFolderStructure>
-						<button @click="expo" class="btn btn-outline-secondary btn-block btn-sm py-0" :disabled="true">Save Structure</button>
-					</div>
-				</div>
+						<DriveFolderStructure v-if="structure !== null" v-show="activeDrive !== ''" @active="onFolderActive" @add-folder="onFolderAdd"
+								:active-drive="activeDrive" :active-folder="activeFolder" :structure="structure"></DriveFolderStructure>
 
-				<div class="card mt-2">
-					<div class="card-body text-center">
-						<div class="balances row text-center">
-							<div class="col-12" v-show="$store.state.balances['shdw'] < 0.02">
-								<div class="alert p-0 alert-warning">Not Enough SHDW</div>
+						<div class="row" v-show="activeDrive !== ''">
+							<hr>
+							<div class="col">
+								<button @click="saveFolderStructure" class="btn btn-outline-secondary btn-block btn-sm py-0"><i class="fa fa-save me-2"></i> Save Structure</button>
 							</div>
-							<div class="col-12" v-show="$store.state.balances['sol'] <= 0">
-								<div class="alert p-0 alert-warning">Not Enough SOL</div>
-							</div>
-
-							<div class="col-6 balance">
-								<img alt="solana token" class="sol-icon" src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" height="32px"> {{ $store.state.balances['sol'] }} SOL
-							</div>
-
-							<div class="col-6 balance">
-								<img alt="shdw token" src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y/logo.png" height="32px"> {{ $store.state.balances['shdw'] }} SHDW
+							<div class="col-auto">
+								<label class="switch">
+									<input type="checkbox" v-model="saveStructureToChain" @change="onToggleSaveLocation">
+									<span :class="`${saveStructureToChain ? 'ps-2' : 'ps-4'}`" class="ps-2 slider round noselect">{{saveStructureToChain ? 'CHAIN' : 'LOCAL'}}</span>
+								</label>
 							</div>
 						</div>
 					</div>
-
-						<div class="card-footer text-center">
-							<p class="small footer">Created With ❤️ By <a target="_blank" href="https://twitter.com/alpha_batem">@AlphaBatem</a>
-							</p>
-							<p class="mb-0 small">
-								<a target="_blank" href="https://solana.com">Solana</a> |
-								<a target="_blank" href="https://alphabatem.com">AlphaBatem</a> |
-								<a target="_blank" href="https://metaverse.alphabatem.com">Metaverse</a> |
-								<a target="_blank" href="https://genesysgo.com/">GenesysGo</a>
-							</p>
-					</div>
 				</div>
+
+				<HostInfo class="mt-2"></HostInfo>
 
 			</div>
 
@@ -56,7 +39,21 @@
 				<div class="card pt-1">
 					<div class="card-body">
 						<FolderCreate @create="onDriveCreate" v-show="showCreateFolder" @close="hideCreate"></FolderCreate>
-						<DriveShow v-if="activeDrive !== ''" :show-file-info="showFileInfo" :files="filterFiles" :drive="currentDrive" :uploadFiles="uploadFiles" @file-info="onToggleFileInfo" @undelete="onDriveUnDelete" @edit="onDriveEdit" @resize="onDriveResize" @delete="onDriveDelete" @file-delete="onFileDelete" @freeze="onDriveFreeze" @addFile="onFileUpload" @upload="onUpload"></DriveShow>
+						<DriveShow v-if="activeDrive !== ''" :structure="structure" :active-folder="activeFolder" :show-file-info="showFileInfo" :files="filterFiles"
+								:drive="currentDrive" :uploadFiles="uploadFiles"
+								@search="onSearch"
+								@folder-select="onFolderActive"
+								@undelete="onDriveUnDelete"
+								@edit="onDriveEdit"
+								@add-folder="onFolderAdd"
+								@resize="onDriveResize"
+								@delete="onDriveDelete"
+								@file-info="onToggleFileInfo"
+								@file-delete="onFileDelete"
+								@file-move="onFileMove"
+								@freeze="onDriveFreeze"
+								@addFile="onFileUpload"
+								@upload="onUpload"></DriveShow>
 
 						<div class="my-5 text-center" v-if="activeDrive === '' && !showCreateFolder">
 							<i class="">No drive selected</i>
@@ -72,6 +69,9 @@
 				<div class="d-block"><i class="fa fa-spinner fa-spin fa-3x"></i></div>
 			</div>
 		</div>
+
+		<FolderAddModal v-if="newFolder !== null" :structure="folderStructure" :target="newFolder.target" @close="onFolderClose" @create-folder="onFolderCreate"></FolderAddModal>
+		<FileMoveModal v-if="fileToMove !== null"  :structure="structure" :target="fileToMove.target" @close="onFileMoveClose" @create-folder="onFileMoveToFolder"></FileMoveModal>
 	</div>
 </template>
 
@@ -84,23 +84,31 @@ import {LAMPORTS_PER_SOL} from "@solana/web3.js";
 import DriveFolderStructure from "../../components/drive/DriveFolderStructure";
 import {DriveConfig, FolderStructure} from "../../api/folder";
 import axios from "axios"
+import HostInfo from "../../components/HostInfo";
+import FolderAddModal from "../../components/drive/FolderAddModal";
+import FileMoveModal from "../../components/drive/FileMoveModal";
 
 export default {
 	name: "Explorer",
-	components: {DriveFolderStructure, DriveShow, FolderCreate, FolderContainer},
+	components: {FileMoveModal, FolderAddModal, HostInfo, DriveFolderStructure, DriveShow, FolderCreate, FolderContainer},
 	data() {
 		return {
 			shadow: null,
 			loading: false,
 			showCreateFolder: false,
 			showFileInfo: false,
-			activeFolder: "_root",
+			activeFolder: "",
 			activeDrive: "",
+			search: "",
 			drives: [],
 			files: {},
 			uploadFiles: [],
 			folderStructure: {},
-			structure: new FolderStructure(new DriveConfig()),
+			saveStructureToChain: true,
+			structure: null,
+
+			newFolder: null,
+			fileToMove: null,
 		}
 	},
 	watch: {
@@ -114,16 +122,32 @@ export default {
 			return this.drives.find(drive => drive.publicKey.toString() === this.activeDrive);
 		},
 
-		filterFiles: function() {
-			if (this.activeFolder === "_root" || this.activeFolder === "")
-				return this.files;
+		filterFiles: function () {
+			let folderName = this.activeFolder
+			let includes = {}
+
+			if (this.structure !== null) {
+				if (folderName === "")
+					folderName = this.structure.getRootName()
+				if (folderName === this.structure.getRootName())
+					includes = this.files; //Root so include all files
+				else
+					this.structure.getFiles(folderName).forEach((i)=> {
+						includes[i] = this.files[i]
+					}) //Custom folder so filter based on that
+			}
 
 			const filtered = {};
-			const includes = this.structure.getFiles(this.activeFolder)
-			for(let i = 0;i<includes.length;i++) {
-				const key = includes[i]
+			const ok = Object.keys(includes)
+			for (let i = 0; i < ok.length; i++) {
+				const key = ok[i]
+
 				if (!this.files[key])
 					continue
+
+				if (this.search !== '' && !key.toLowerCase().includes(this.search.toLowerCase())) {
+					continue;
+				}
 
 				filtered[key] = this.files[key]
 			}
@@ -140,31 +164,52 @@ export default {
 			this.showCreateFolder = false;
 		},
 
-		expo: function() {
+		onToggleSaveLocation: function(e) {
+			this.saveStructureToChain = e.target.checked;
+			localStorage.setItem("shadow-drive:general:save_structure_to_chain", this.saveStructureToChain ? "1" : "0")
+			this.$toastr.i("Save location changed")
+		},
+
+		saveFolderStructure: function () {
 			const folderOut = this.structure.export()
 			console.log(folderOut)
+
+			if (!this.saveStructureToChain) {
+				localStorage.setItem(`drive:${this.activeDrive}:structure`, folderOut)
+				this.$toastr.s("Folder structure saved")
+				return
+			}
+
 			const url = `https://shdw-drive.genesysgo.net/${this.activeDrive}/_folder`
 			const file = new File([folderOut], "_folder")
 
 			let promise;
-			if (this.structure.folderHasFile("_root", "_folder")) {
+
+			if (this.files["_folder"]) {
 				promise = this.shadow.editFile(this.activeDrive, url, file)
 			} else {
 				promise = this.shadow.uploadFile(this.activeDrive, file)
 			}
 
+			this.loading = true;
 			promise.then(() => {
 				this.$toastr.s("Structure saved")
 			}).catch((err) => {
 				console.log("Structure save error", err);
 				this.$toastr.e(err.message);
+			}).finally(() => {
+				this.loading = false;
 			});
 
 		},
 
+		onSearch(s) {
+			this.search = s;
+		},
+
 		onToggleFileInfo(v) {
 			console.log("Toggle file info", v)
-			this.showFileInfo =v;
+			this.showFileInfo = v;
 		},
 
 		onDriveCreate(cfg) {
@@ -188,7 +233,7 @@ export default {
 		 * @param data
 		 */
 		onFileUpload(data) {
-			console.log("On file upload",data)
+			console.log("On file upload", data)
 
 			if (data.name.length > 32) {
 				const ext = "." + data.name.split('.').pop();
@@ -321,15 +366,60 @@ export default {
 
 		onFolderActive(folder) {
 			this.activeFolder = folder;
+			this.structure.setActive(this.activeFolder)
+		},
+
+		onFileMove(file) {
+			this.fileToMove = {
+				folder: null,
+				target: file.name,
+			}
+		},
+
+		onFileMoveToFolder(targetFolder) {
+			console.log("onFileMoveToFolder", targetFolder)
+			this.structure.cfg.addFile(targetFolder.name, this.fileToMove.target)
+			this.onFileMoveClose()
+		},
+
+		onFolderAdd(targetFolder) {
+			this.newFolder = {
+				name: "",
+				target: targetFolder,
+			};
+		},
+
+		onFolderClose() {
+			this.newFolder = null
+		},
+
+		onFileMoveClose() {
+			this.fileToMove = null
+		},
+		onFolderCreate(folder) {
+			console.log(`Adding ${folder.name} to ${this.newFolder.target}`)
+			const err = this.structure.cfg.addFolder(this.newFolder.target, folder.name)
+
+			this.newFolder = null
+			if (err === null) {
+				this.activeFolder = folder.name
+			} else {
+				this.$toastr.e(err)
+			}
 		},
 
 		onVisitDrive(drive) {
 			console.log("Setting active drive", drive);
 			this.activeDrive = drive
 			this.uploadFiles = [];
-			this.activeFolder = "_root";
 			this.files = {};
+			this.showCreateFolder = false;
 			this.showFileInfo = false;
+			this.activeFolder = "";
+
+			if (this.structure !== null)
+				this.structure.reset();
+
 			this.indexFiles();
 			this.pingBlokHost();
 		},
@@ -350,7 +440,14 @@ export default {
 		pingBlokHost() {
 			axios.post("https://webhost2.alphabatem.com/cid/register", {
 				address: this.activeDrive,
+			}).catch(() => {
+				console.log("Unable to verify on blokhost")
 			})
+		},
+
+		toggleSaveStructureToChain() {
+			this.saveStructureToChain = !this.saveStructureToChain
+			localStorage.setItem("shadow-drive:general:save_structure_to_chain", this.saveStructureToChain)
 		},
 
 		onDriveEdit() {
@@ -462,8 +559,22 @@ export default {
 				this.structure = new FolderStructure(new DriveConfig(r.data))
 			}).catch((e) => {
 				console.log("getDriveFolderConfig", e)
-				this.structure = new FolderStructure(new DriveConfig({}))
+
+				//Fallback to looking at local storage
+				this.structure = new FolderStructure(new DriveConfig(this.getLocalDriveFolderConfig()))
+				this.activeFolder = this.structure.getRootName();
 			})
+		},
+
+
+		getLocalDriveFolderConfig() {
+			let localData = localStorage.getItem(`drive:${this.activeDrive}:structure`)
+			if (localData == null)
+				localData = ""
+			else
+				localData = JSON.parse(localData)
+
+			return localData
 		},
 
 		onDriveInfo() {
@@ -493,7 +604,8 @@ export default {
 				})
 
 				if (!folderCalled) {
-					this.structure = new FolderStructure(new DriveConfig()) //Clear folders (not present in req)
+					this.structure = new FolderStructure(new DriveConfig(this.getLocalDriveFolderConfig()))
+					// this.structure = new FolderStructure(new DriveConfig("")) //Clear folders (not present in req)
 				}
 
 				console.log("File Info:", r)
@@ -518,7 +630,7 @@ export default {
 		driveIndex() {
 			this.loading = true;
 			this.shadow.index().then((resp) => {
-				console.log("Drives", resp);
+				// console.log("Drives", resp);
 				this.drives = resp;
 			}).catch((err) => {
 				console.log("DriveIndex error", err);
@@ -557,6 +669,16 @@ export default {
 		if (this.$store.state.wallet_connected) {
 			this.onWalletConnected()
 		}
+
+		let storageLocation = localStorage.getItem("shadow-drive:general:save_structure_to_chain");
+		if (storageLocation === null) {
+			localStorage.setItem("shadow-drive:general:save_structure_to_chain", "1")
+			storageLocation = "1"
+		}
+
+		console.log("Save location: ", storageLocation)
+		this.saveStructureToChain = storageLocation === "1";
+
 	}
 }
 </script>
@@ -574,13 +696,5 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-}
-
-p.footer {
-	font-weight: bold;
-}
-
-.balance {
-	font-weight: bold;
 }
 </style>
