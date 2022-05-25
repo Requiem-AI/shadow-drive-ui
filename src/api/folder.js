@@ -52,6 +52,11 @@ export class DriveConfig {
 	}
 
 	addFile(folderName, file) {
+		if (!this.folders[folderName]) {
+			console.error("Folder does not exist: ", folderName)
+			return;
+		}
+
 		if (this.folders[folderName].files.includes(file))
 			return
 
@@ -59,13 +64,16 @@ export class DriveConfig {
 	}
 
 	addFolder(parent, folderName) {
+		if (parent === "")
+			parent = this.getRoot().name
+
 		console.log("Adding", folderName, parent, Object.keys(this.folders))
 
 		// if (!this.folders[parent])
 		// 	this.folders[parent] = new Folder()
 
 		const ok = Object.keys(this.folders)
-		for(let i=0;i<ok.length;i++) {
+		for (let i = 0; i < ok.length; i++) {
 			if (this.folders[ok[i]].folders.includes(folderName))
 				return "Name in use";
 		}
@@ -84,11 +92,11 @@ export class DriveConfig {
 		delete this.folders[folderName]
 
 		const ok = Object.keys(this.folders)
-		for(let i=0;i<ok.length;i++) {
+		for (let i = 0; i < ok.length; i++) {
 			const idx = this.folders[ok[i]].folders.indexOf(folderName)
 			if (idx > -1) {
 				console.log(`Removing subfolder: ${folderName} - From: ${ok[i]} - Idx: ${idx}`, this.folders[ok[i]].folders)
-				this.folders[ok[i]].folders.splice(idx,1)
+				this.folders[ok[i]].folders.splice(idx, 1)
 			}
 		}
 	}

@@ -141,7 +141,7 @@
 
 				<div class="row mt-3" v-if="!readOnly">
 					<FileUpload :files="files" :drive="drive" :upload-files="uploadFiles" @upload="onUploadClick"
-							@addFile="onFileAdded"></FileUpload>
+							@addFile="onFileAdded" @addFolder="onFolderAddUpload" @setFileFolder="onMoveFile"></FileUpload>
 				</div>
 			</div>
 		</div>
@@ -323,6 +323,14 @@ export default {
 
 		onFolderAdd: function(f) {
 			this.$emit("add-folder", f)
+		},
+
+		onFolderAddUpload: function(f, parent) {
+			this.$emit("upload-add-folder", f, parent)
+		},
+
+		onMoveFile: function(folder,file) {
+			this.$emit("folder-add-file", folder,file)
 		},
 
 		onFolderBack: function() {

@@ -99,8 +99,25 @@ export default {
 
 					const ok = Object.keys(zip.files)
 					for (let i = 0; i < ok.length; i++) {
+						// console.log("Loading zip file: ", ok[i])
+
+						const parts = ok[i].split("/")
+						const file = parts.pop();
+						const folder = parts.pop() || "";
+						const folderParent = parts.pop() || "";
+
+						console.log("Adding folder", folder)
+						this.$emit("addFolder", folder, folderParent)
+						if (zip.files[ok[i]].dir) {
+							continue
+						}
+
+
+						console.log("Adding file to folder", folder, file)
+						this.$emit("setFileFolder", folder, file)
+
 						zip.file(ok[i]).async("blob").then(str => {
-							this.onFileAdded(new File([str], ok[i]))
+							this.onFileAdded(new File([str], file), folder, folderParent)
 						})
 					}
 
@@ -112,7 +129,7 @@ export default {
 
 		},
 
-		onFileAdded: function (file) {
+		onFileAdded: function (file, folder = "", parentFolder = "") {
 			if (file.name.length > 32) {
 				const ext = "." + file.name.split('.').pop();
 				const shorterName = file.name.substr(0, 32 - ext.length) + ext
@@ -130,7 +147,7 @@ export default {
 				return
 			}
 
-			this.$emit("addFile", file)
+			this.$emit("addFile", file, folder, parentFolder)
 		}
 
 	},

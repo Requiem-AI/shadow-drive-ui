@@ -54,6 +54,8 @@
 								@file-info="onToggleFileInfo"
 								@file-delete="onFileDelete"
 								@file-move="onFileMove"
+								@folder-add-file="onFileMoved"
+								@upload-add-folder="onFolderAdded"
 								@freeze="onDriveFreeze"
 								@addFile="onFileUpload"
 								@upload="onUpload"></DriveShow>
@@ -248,9 +250,11 @@ export default {
 		/**
 		 * TODO File progress
 		 * @param data
+		 * @param folder
+		 * @param parent
 		 */
-		onFileUpload(data) {
-			console.log("On file upload", data)
+		onFileUpload(data, folder = "", parent = "") {
+			console.log("On file upload", data, folder, parent)
 
 			if (data.name.length > 32) {
 				const ext = "." + data.name.split('.').pop();
@@ -259,6 +263,11 @@ export default {
 					writable: true,
 					value: shorterName
 				});
+			}
+
+			if (folder !== "") {
+				this.structure.cfg.addFolder(parent, folder)
+				this.structure.cfg.addFile(data.name, folder)
 			}
 
 			this.uploadFiles.push({
@@ -393,9 +402,17 @@ export default {
 			}
 		},
 
+		onFileMoved(folder, file) {
+			this.structure.cfg.addFile(folder, file)
+		},
+
+		onFolderAdded(folder, parent) {
+			return this.structure.cfg.addFolder(parent, folder)
+		},
+
 		onFileMoveToFolder(targetFolder) {
 			console.log("onFileMoveToFolder", targetFolder)
-			this.structure.cfg.addFile(targetFolder.name, this.fileToMove.target)
+			this.onFileMoved(targetFolder.name, this.fileToMove.target)
 			this.onFileMoveClose()
 		},
 
@@ -423,7 +440,8 @@ export default {
 		},
 		onFolderCreate(folder) {
 			console.log(`Adding ${folder.name} to ${this.newFolder.target}`)
-			const err = this.structure.cfg.addFolder(this.newFolder.target, folder.name)
+
+			const err = this.onFolderAdded(this.newFolder.target, folder.name)
 
 			this.newFolder = null
 			if (err === null) {
