@@ -57,7 +57,7 @@
 			</div>
 		</div>
 
-		<div class="row text-center">
+		<div class="row text-center" v-if="!readonly">
 <!--			<div class="mt-2 col-6 col-md-4 col-lg-2 offset-lg-1">-->
 <!--				<button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-eye"></i> View</button>-->
 <!--			</div>-->
@@ -88,6 +88,12 @@ export default {
 		file: {
 			type: Object,
 			required: true,
+		},
+		readonly: {
+			type: Boolean,
+			default() {
+				return true
+			}
 		}
 	},
 	data() {

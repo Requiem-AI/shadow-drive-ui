@@ -11,7 +11,11 @@
 			<div class="collapse navbar-collapse" id="navbarSupportedContent">
 				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 					<li class="nav-item active">
-						<router-link to="/" class="nav-link text-uppercase" href="#">Shadow Drive <span class="sr-only">(current)</span>
+						<router-link to="/" class="nav-link text-uppercase" href="#"><i class="fa fa-floppy-disk"></i> Drive <span class="sr-only">(current)</span>
+						</router-link>
+					</li>
+					<li class="nav-item active">
+						<router-link to="/" class="nav-link text-uppercase" href="#"><i class="fa fa-search"></i> Explorer <span class="sr-only">(current)</span>
 						</router-link>
 					</li>
 				</ul>
@@ -24,14 +28,14 @@
 					<img alt="shdw token" src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y/logo.png" height="32px"> {{ $store.state.balances['shdw'] }} SHDW
 				</div>
 
-				<div class="nav-item text-white small me-3 mb-3 mb-md-0">
-					{{ $store.state.wallet_addr }}
-				</div>
+<!--				<div class="nav-item text-white small me-3 mb-3 mb-md-0">-->
+<!--					{{ $store.state.wallet_addr }}-->
+<!--				</div>-->
 				<div class="auth">
-					<button v-if="$store.state.wallet_connected" v-on:click="logout" class="btn btn-block btn-primary wow fadeIn"
-									data-animation-delay="0.3s"><i class="fa fa-arrow-right-from-bracket"></i> LOGOUT
-					</button>
-					<Phantom v-if="!$store.state.wallet_connected" class="btn btn-primary btn-block btn-sm wow fadeIn"></Phantom>
+<!--					<button v-if="$store.state.wallet_connected" v-on:click="logout" class="btn btn-block btn-outline-light wow fadeIn"-->
+<!--									data-animation-delay="0.3s"><i class="fa fa-arrow-right-from-bracket"></i> LOGOUT-->
+<!--					</button>-->
+					<Phantom class="btn btn-outline-light btn-block btn-sm wow fadeIn"></Phantom>
 				</div>
 			</div>
 		</div>

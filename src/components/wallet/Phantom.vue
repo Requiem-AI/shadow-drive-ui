@@ -1,6 +1,6 @@
 <template>
 	<a v-on:click="handleConnect">
-		<slot></slot>
+		<img src="@/assets/images/phantom_small.png"> <slot></slot>
 		{{ connected ? shortAddr : wallet_addr }}</a>
 </template>
 
@@ -23,6 +23,12 @@ export default {
 			connected: false,
 			wallet_addr: "",
 		}
+	},
+	watch: {
+		'$store.state.wallet_connected'() {
+			this.connected = this.$store.state.wallet_connected;
+			this.wallet_addr = this.$store.state.wallet_addr;
+		},
 	},
 	computed: {
 		shortAddr: function () {
@@ -57,6 +63,7 @@ export default {
 				this.triggerAuth(provider);
 			} else {
 				console.log('Please install Phantom!');
+				this.$toastr.e("Please install Phantom!")
 			}
 		},
 
@@ -115,8 +122,4 @@ export default {
 </script>
 
 <style scoped>
-a {
-	color: white !important;
-}
-
 </style>

@@ -17,15 +17,23 @@ export class Shadow {
         const pk = new PhantomWalletAdapter();
         await pk.connect();
 
+        this._startConnection();
+
+        console.log("PK: ", pk)
+        this.wallet = pk._wallet;
+        this.drive = await new ShdwDrive(this.connection, this.wallet).init();
+        console.log("Connected to shadow drive");
+    }
+
+    _startConnection() {
         this.connection = new web3.Connection(
             "https://ssc-dao.genesysgo.net/",
             'finalized',
         );
+    }
 
-        console.log(pk)
-        this.wallet = pk._wallet;
-        this.drive = await new ShdwDrive(this.connection, this.wallet).init();
-        console.log("Connected to shadow drive");
+    toPublicKey(strAddr) {
+        return new web3.PublicKey(strAddr)
     }
 
     async getSOLBalance(walletAddr) {

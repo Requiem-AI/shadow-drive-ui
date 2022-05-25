@@ -117,16 +117,4 @@ export default {
 </script>
 
 <style scoped>
-.close {
-	border: 2px solid white;
-	border-radius: 14px;
-	font-weight: bold;
-	cursor: pointer;
-	transition: all .2s;
-}
-
-.close:hover {
-	border-color: darkred;
-	color: darkred;
-}
 </style>

@@ -7,6 +7,7 @@
 						<div class="row">
 							<h4 class="col">Drives</h4>
 							<div class="col-4 text-right">
+								<button @click="showSearch" class="btn btn-secondary btn-sm me-1"><i class="fa fa-search"></i></button>
 								<button @click="showCreate" class="btn btn-primary btn-sm">New</button>
 							</div>
 						</div>
@@ -24,7 +25,7 @@
 							<div class="col-auto">
 								<label class="switch">
 									<input type="checkbox" v-model="saveStructureToChain" @change="onToggleSaveLocation">
-									<span :class="`${saveStructureToChain ? 'ps-2' : 'ps-4'}`" class="ps-2 slider round noselect">{{saveStructureToChain ? 'CHAIN' : 'LOCAL'}}</span>
+									<span :class="`${saveStructureToChain ? 'ps-2' : 'ps-4'}`" class="ps-2 slider round noselect">{{ saveStructureToChain ? 'CHAIN' : 'LOCAL' }}</span>
 								</label>
 							</div>
 						</div>
@@ -38,6 +39,7 @@
 			<div class="col-sm-12 col-md-8 col-lg-9">
 				<div class="card pt-1">
 					<div class="card-body">
+						<DriveSearch @search="onSearchDrive" v-show="showSearchDrives"></DriveSearch>
 						<FolderCreate @create="onDriveCreate" v-show="showCreateFolder" @close="hideCreate"></FolderCreate>
 						<DriveShow v-if="activeDrive !== ''" :structure="structure" :active-folder="activeFolder" :show-file-info="showFileInfo" :files="filterFiles"
 								:drive="currentDrive" :uploadFiles="uploadFiles"
@@ -55,7 +57,7 @@
 								@addFile="onFileUpload"
 								@upload="onUpload"></DriveShow>
 
-						<div class="my-5 text-center" v-if="activeDrive === '' && !showCreateFolder">
+						<div class="my-5 text-center" v-if="activeDrive === '' && !showCreateFolder && !showSearchDrives">
 							<i class="">No drive selected</i>
 						</div>
 
@@ -71,7 +73,7 @@
 		</div>
 
 		<FolderAddModal v-if="newFolder !== null" :structure="folderStructure" :target="newFolder.target" @close="onFolderClose" @create-folder="onFolderCreate"></FolderAddModal>
-		<FileMoveModal v-if="fileToMove !== null"  :structure="structure" :target="fileToMove.target" @close="onFileMoveClose" @create-folder="onFileMoveToFolder"></FileMoveModal>
+		<FileMoveModal v-if="fileToMove !== null" :structure="structure" :target="fileToMove.target" @close="onFileMoveClose" @create-folder="onFileMoveToFolder"></FileMoveModal>
 	</div>
 </template>
 
@@ -87,16 +89,18 @@ import axios from "axios"
 import HostInfo from "../../components/HostInfo";
 import FolderAddModal from "../../components/drive/FolderAddModal";
 import FileMoveModal from "../../components/drive/FileMoveModal";
+import DriveSearch from "../../components/drive/DriveSearch";
 
 export default {
 	name: "Explorer",
-	components: {FileMoveModal, FolderAddModal, HostInfo, DriveFolderStructure, DriveShow, FolderCreate, FolderContainer},
+	components: {DriveSearch, FileMoveModal, FolderAddModal, HostInfo, DriveFolderStructure, DriveShow, FolderCreate, FolderContainer},
 	data() {
 		return {
 			shadow: null,
 			loading: false,
 			showCreateFolder: false,
 			showFileInfo: false,
+			showSearchDrives: true,
 			activeFolder: "",
 			activeDrive: "",
 			search: "",
@@ -132,7 +136,7 @@ export default {
 				if (folderName === this.structure.getRootName())
 					includes = this.files; //Root so include all files
 				else
-					this.structure.getFiles(folderName).forEach((i)=> {
+					this.structure.getFiles(folderName).forEach((i) => {
 						includes[i] = this.files[i]
 					}) //Custom folder so filter based on that
 			}
@@ -156,15 +160,26 @@ export default {
 		}
 	},
 	methods: {
-		showCreate() {
+		reset() {
 			this.activeDrive = ""
+			this.showCreateFolder = false;
+			this.showFileInfo = false;
+			this.showSearchDrives = false;
+		},
+
+		showCreate() {
+			this.reset();
 			this.showCreateFolder = true;
+		},
+		showSearch() {
+			this.reset();
+			this.showSearchDrives = true;
 		},
 		hideCreate() {
 			this.showCreateFolder = false;
 		},
 
-		onToggleSaveLocation: function(e) {
+		onToggleSaveLocation: function (e) {
 			this.saveStructureToChain = e.target.checked;
 			localStorage.setItem("shadow-drive:general:save_structure_to_chain", this.saveStructureToChain ? "1" : "0")
 			this.$toastr.i("Save location changed")
@@ -408,14 +423,44 @@ export default {
 			}
 		},
 
+		onSearchDrive(driveAddress) {
+
+			this.loading = true;
+
+			// this.shadow.indexFiles(driveAddress).then((resp) => {
+			// 	// console.log("Drives", resp);
+			// 	this.drives = resp;
+			// 	this.onVisitDrive(driveAddress)
+			// }).catch((err) => {
+			// 	console.log("Drive Show error", err);
+			// 	this.$toastr.e("Unable to load drive");
+			// }).finally(() => {
+			// 	this.loading = false;
+			// });
+
+			this.shadow.show(driveAddress).then((resp) => {
+				console.log("ShowDrives::", resp);
+
+				if (!this.drives.filter((d) => d.publicKey.toString() === driveAddress).length) {
+					console.log("Adding drive to array")
+					this.drives.push({account: resp, publicKey: this.shadow.toPublicKey(driveAddress)});
+				}
+
+				this.onVisitDrive(driveAddress)
+			}).catch((err) => {
+				console.log("Drive Show error", err);
+				this.$toastr.e("Unable to load drive");
+			}).finally(() => {
+				this.loading = false;
+			});
+		},
+
 		onVisitDrive(drive) {
 			console.log("Setting active drive", drive);
+			this.reset();
 			this.activeDrive = drive
 			this.uploadFiles = [];
 			this.files = {};
-			this.showCreateFolder = false;
-			this.showFileInfo = false;
-			this.activeFolder = "";
 
 			if (this.structure !== null)
 				this.structure.reset();
@@ -630,7 +675,7 @@ export default {
 		driveIndex() {
 			this.loading = true;
 			this.shadow.index().then((resp) => {
-				// console.log("Drives", resp);
+				console.log("IndexDrives::", resp);
 				this.drives = resp;
 			}).catch((err) => {
 				console.log("DriveIndex error", err);
@@ -643,7 +688,11 @@ export default {
 		async onWalletConnected() {
 			await this.shadow.initDrive(this.$store.state.wallet_addr);
 			this.driveIndex()
-			await this.shadow.getSHDWBalances(this.$store.state.wallet_addr).then(r => {
+			this.getBalances();
+		},
+
+		getBalances() {
+			this.shadow.getSHDWBalances(this.$store.state.wallet_addr).then(r => {
 				const token = r.value[0];
 				let amount
 				if (!token) {
@@ -658,7 +707,7 @@ export default {
 				});
 			})
 
-			await this.shadow.getSOLBalance(this.$store.state.wallet_addr).then(r => {
+			this.shadow.getSOLBalance(this.$store.state.wallet_addr).then(r => {
 				console.log("SOL", r)
 				this.$store.commit('set_token_balance', {key: "sol", value: (r / LAMPORTS_PER_SOL).toFixed(4)});
 			})
@@ -669,6 +718,7 @@ export default {
 		if (this.$store.state.wallet_connected) {
 			this.onWalletConnected()
 		}
+
 
 		let storageLocation = localStorage.getItem("shadow-drive:general:save_structure_to_chain");
 		if (storageLocation === null) {

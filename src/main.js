@@ -19,34 +19,34 @@ Vue.use(VueToastr, {
 
     /* OverWrite Plugin Options if you need */
 });
-
-const publicRoutes = {
-    "Login": true,
-    "Home": true,
-    "Privacy Policy": true,
-    "Terms and Conditions": true,
-}
+//
+// const publicRoutes = {
+//     "Login": true,
+//     "Home": true,
+//     "Privacy Policy": true,
+//     "Terms and Conditions": true,
+// }
 
 
 // GOOD
-router.beforeEach((to, from, next) => {
-    if (store.state.routerHistory.length > 5) {
-        store.state.routerHistory.splice(-1, 1);
-    }
-
-    // if (to.name !== 'Login' && store.state.wallet_addr === "") {
-    if (!publicRoutes[to.name] && store.state.wallet_addr === "") {
-        store.state.routerHistory.push(to.fullPath);
-        next({name: 'Login'})
-        return
-    }
-
-    if (to.name !== 'Login') {
-        store.state.routerHistory.push(from.fullPath);
-    }
-
-    next()
-})
+// router.beforeEach((to, from, next) => {
+//     if (store.state.routerHistory.length > 5) {
+//         store.state.routerHistory.splice(-1, 1);
+//     }
+//
+//     // if (to.name !== 'Login' && store.state.wallet_addr === "") {
+//     if (!publicRoutes[to.name] && store.state.wallet_addr === "") {
+//         store.state.routerHistory.push(to.fullPath);
+//         next({name: 'Login'})
+//         return
+//     }
+//
+//     if (to.name !== 'Login') {
+//         store.state.routerHistory.push(from.fullPath);
+//     }
+//
+//     next()
+// })
 
 new Vue({
     router,

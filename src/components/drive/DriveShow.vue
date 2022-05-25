@@ -11,23 +11,23 @@
 				<DriveStorageEdit @edit="onEdit" v-show="edit" :folder="drive"></DriveStorageEdit>
 			</div>
 
-			<div class="col-3">
+			<div class="col">
 				<input class="form-control" placeholder="Search" v-model="search" @keyup="onSearch">
 			</div>
 
 			<!--			<div class="col-1">-->
 			<!--				<button class="btn btn-primary btn-block btn-sm" @click="$emit('edit')">Edit</button>-->
 			<!--			</div>-->
-			<div class="col-4 col-md-4 col-lg-1">
+			<div v-if="!readOnly" class="col-4 col-md-4 col-lg-1">
 				<button class="btn btn-warning btn-block btn-sm" @click="edit = !edit">Resize</button>
 			</div>
-			<div class="col-4 col-md-4 col-lg-1" v-if="!drive.account.toBeDeleted">
+			<div class="col-4 col-md-4 col-lg-1" v-if="!drive.account.toBeDeleted && !readOnly">
 				<button class="btn btn-danger btn-block btn-sm" @click="$emit('delete')">Delete</button>
 			</div>
-			<div class="col-4 col-md-4 col-lg-1">
+			<div v-if="!readOnly" class="col-4 col-md-4 col-lg-1">
 				<button class="btn btn-secondary btn-block btn-sm" @click="$emit('freeze')">Freeze</button>
 			</div>
-			<div class="col-4 col-lg-2" v-if="drive.account.toBeDeleted">
+			<div class="col-4 col-lg-2" v-if="drive.account.toBeDeleted && !readOnly">
 				<button class="btn btn-danger btn-block btn-sm" @click="$emit('undelete')">Cancel Delete</button>
 			</div>
 		</div>
@@ -114,9 +114,9 @@
 								<!--						<a target="_blank" :download="file.name" :href="file.url"><i class="fa fa-download mx-2 pointer"></i></a>-->
 								<a target="_blank" :download="file.name" :href="file.url"><i class="fa fa-share mx-2 pointer"></i></a>
 								<!--						<i class="fa fa-edit mx-2 pointer"></i>-->
-								<a @click="moveFile(file)"><i class="fa fa-folder mx-2 pointer"></i></a>
+								<a v-if="!readOnly" @click="moveFile(file)"><i class="fa fa-folder mx-2 pointer"></i></a>
 								<a @click="copyLink(file)"><i class="fa fa-link mx-2 pointer"></i></a>
-								<a @click="onDeleteFile(file)"><i class="fa fa-trash mx-2 pointer"></i></a>
+								<a v-if="!readOnly" @click="onDeleteFile(file)"><i class="fa fa-trash mx-2 pointer"></i></a>
 							</td>
 						</tr>
 						</tbody>
@@ -139,7 +139,7 @@
 					<p class="small">No files uploaded...</p>
 				</div>
 
-				<div class="row mt-3">
+				<div class="row mt-3" v-if="!readOnly">
 					<FileUpload :files="files" :drive="drive" :upload-files="uploadFiles" @upload="onUploadClick"
 							@addFile="onFileAdded"></FileUpload>
 				</div>
@@ -153,7 +153,7 @@
 		<!--		</div>-->
 
 
-		<FileView @share="copyLink(activeFile)" @delete="onDeleteFile(activeFile)" @close="hideFileInfo" v-if="showFileInfo" :file="activeFile"></FileView>
+		<FileView @share="copyLink(activeFile)" @delete="onDeleteFile(activeFile)" @close="hideFileInfo" :readonly="readOnly" v-if="showFileInfo" :file="activeFile"></FileView>
 	</div>
 </template>
 
@@ -213,6 +213,10 @@ export default {
 		}
 	},
 	computed: {
+		readOnly: function() {
+			return this.drive.account.owner1.toString() !== this.$store.state.wallet_addr
+		},
+
 		createdAt: function () {
 			return new Date(this.drive.account.creationTime).toLocaleString();
 		},

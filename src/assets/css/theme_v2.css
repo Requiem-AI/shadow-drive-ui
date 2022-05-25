@@ -64,7 +64,6 @@ input::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
 
 .btn-secondary {
     background-color: rgba(0, 0, 0, 0);
-    border: 2px solid #26b6d4;
     font-weight: bold;
     /*line-height: 50px;*/
 }

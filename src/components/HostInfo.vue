@@ -1,7 +1,7 @@
 <template>
 	<div class="card">
 		<div class="card-body text-center">
-			<div class="balances row text-center">
+			<div v-if="$store.state.wallet_connected" class="balances row text-center">
 				<div class="col-12" v-show="$store.state.balances['shdw'] < 0.02">
 					<div class="alert p-0 alert-warning">Not Enough SHDW</div>
 				</div>
