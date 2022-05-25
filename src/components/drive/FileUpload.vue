@@ -8,11 +8,14 @@
 		</div>
 
 		<div class="row mt-3" v-show="uploadFiles.length > 0">
-			<div class="col-12 my-1" v-for="(file,key) in uploadFiles" :key="key">
-				<FileUploadInfo @remove="uploadFiles.splice(key,1)" :request="file"></FileUploadInfo>
+			<hr>
+			<div class="pending-file-container">
+				<div class="col-12 my-1" v-for="(file,key) in uploadFiles" :key="key">
+					<FileUploadInfo @remove="uploadFiles.splice(key,1)" :request="file"></FileUploadInfo>
+				</div>
 			</div>
 
-			<div class="col-12 text-center my-3">
+			<div class="col-12 text-center mt-3">
 				<p class="small mb-0">Total Upload Size: {{ (uploadSize / 1024 / 1024).toFixed(2) }} MB</p>
 				<p v-show="!canUpload" class="small text-danger">Upload size exceeds available size!</p>
 				<button :disabled="!canUpload" class="btn btn-primary" @click="onUploadClick">Upload</button>
@@ -168,6 +171,11 @@ export default {
 .upload-container {
 	position: relative;
 	min-height: 100px;
+}
+
+.pending-file-container {
+	max-height: 300px;
+	overflow-y: scroll;
 }
 
 .upload-container {
