@@ -1,17 +1,17 @@
 <template>
 	<div class="drive-show">
 		<div class="row mb-3" v-show="drive !== null">
-			<div class="col-sm-12 col-md-6 col-lg-4">
+			<div class="col-sm-12 col-md-6 col-lg-3">
 				<span class="inlineh4 mt-2">{{ drive.account.identifier }}</span>
 				<DriveLock class="d-inline mx-3" :folder="drive"></DriveLock>
 				<span v-if="drive.account.toBeDeleted" class="badge bg-danger">PENDING DELETION</span>
 			</div>
-			<div class="col-sm-12 col-md-6 col-lg-2">
+			<div class="col-sm-12 col-md-6 col-lg-3">
 				<DriveStorage v-show="!edit" class="text-center mt-2" :folder="drive"></DriveStorage>
 				<DriveStorageEdit @edit="onEdit" v-show="edit" :folder="drive"></DriveStorageEdit>
 			</div>
 
-			<div class="col">
+			<div class="col-12 col-md-12 col-lg-3 mb-3 mb-lg-0">
 				<input class="form-control" placeholder="Search" v-model="search" @keyup="onSearch">
 			</div>
 

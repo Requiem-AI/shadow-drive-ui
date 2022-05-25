@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<hr>
-		<DirectoryFolder :active="activeFolder" @active="onFolderActive" @delete-folder="onFolderDelete" @add-folder="onFolderAdd" :structure="structure"
+		<DirectoryFolder class="folder-dir" :active="activeFolder" @active="onFolderActive" @delete-folder="onFolderDelete" @add-folder="onFolderAdd" :structure="structure"
 				:folder="structure.getRootName()"></DirectoryFolder>
 	</div>
 </template>
@@ -42,4 +42,9 @@ export default {
 </script>
 
 <style scoped>
+
+.folder-dir {
+	max-height: 300px;
+	overflow-y: scroll;
+}
 </style>

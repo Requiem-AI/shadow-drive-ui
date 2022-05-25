@@ -5,8 +5,8 @@
 				<div class="card">
 					<div class="card-header">
 						<div class="row">
-							<h4 class="col">Drives</h4>
-							<div class="col-4 text-right">
+							<h4 class="col-auto">Drives</h4>
+							<div class="col text-right">
 								<button @click="showSearch" class="btn btn-secondary btn-sm me-1"><i class="fa fa-search"></i></button>
 								<button @click="showCreate" class="btn btn-primary btn-sm">New</button>
 							</div>

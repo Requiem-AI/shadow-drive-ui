@@ -9,11 +9,11 @@
 					<div class="alert p-0 alert-warning">Not Enough SOL</div>
 				</div>
 
-				<div class="col-6 balance">
+				<div class="col-12 col-md-12 col-lg-6 my-2 my-lg-0 balance">
 					<img alt="solana token" class="sol-icon" src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" height="32px"> {{ $store.state.balances['sol'] }} SOL
 				</div>
 
-				<div class="col-6 balance">
+				<div class="col-12 col-md-12 col-lg-6 my-2 my-lg-0 balance">
 					<img alt="shdw token" src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/SHDWyBxihqiCj6YekG2GUr7wqKLeLAMK1gHZck9pL6y/logo.png" height="32px"> {{ $store.state.balances['shdw'] }} SHDW
 				</div>
 			</div>
