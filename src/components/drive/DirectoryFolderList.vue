@@ -5,7 +5,8 @@
 		</div>
 		<!--		<span :class="isActive" class="noselect" @click="onFolderClick"><i class="fa fa-folder"></i></span> <span @click="onFolderNameClick" class="noselect" :class="isActive">{{ folder }}</span>-->
 		<div class="inner mb-2" :style="showClass">
-			<DirectoryFolder class="ml-1" :active="active" @active="onFolderActive" @add-folder="onFolderAdd" :folder="folder" :structure="structure" :key="`${folder}-folder-${key}`"
+			<DirectoryFolder class="ml-1" :show-files="false" :active="active" @active="onFolderActive" @add-folder="onFolderAdd" :folder="folder" :structure="structure"
+					:key="`${folder}-folder-${key}`"
 					v-for="(folder,key) in subfolders"></DirectoryFolder>
 			<div v-show="isActive" @click="addFolder(folder)" class="btn btn-folder">NEW</div>
 		</div>

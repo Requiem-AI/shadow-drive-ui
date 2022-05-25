@@ -14,7 +14,8 @@
 					</div>
 					<div class="card-body">
 						<FolderContainer @active="onVisitDrive" :folders="drives" :activeDrive="activeDrive" :loading="loading"></FolderContainer>
-						<DriveFolderStructure v-if="structure !== null" v-show="activeDrive !== ''" @active="onFolderActive" @add-folder="onFolderAdd"
+						<DriveFolderStructure :key="rand" v-if="structure !== null" v-show="activeDrive !== ''" @active="onFolderActive" @add-folder="onFolderAdd"
+								@delete-folder="onFolderDelete"
 								:active-drive="activeDrive" :active-folder="activeFolder" :structure="structure"></DriveFolderStructure>
 
 						<div class="row" v-show="activeDrive !== ''">
@@ -104,13 +105,13 @@ export default {
 			activeFolder: "",
 			activeDrive: "",
 			search: "",
+			rand:'',
 			drives: [],
 			files: {},
 			uploadFiles: [],
 			folderStructure: {},
 			saveStructureToChain: true,
 			structure: null,
-
 			newFolder: null,
 			fileToMove: null,
 		}
@@ -162,6 +163,7 @@ export default {
 	methods: {
 		reset() {
 			this.activeDrive = ""
+			this.activeFolder = ""
 			this.showCreateFolder = false;
 			this.showFileInfo = false;
 			this.showSearchDrives = false;
@@ -402,6 +404,14 @@ export default {
 				name: "",
 				target: targetFolder,
 			};
+		},
+
+		onFolderDelete(targetFolder) {
+			this.activeFolder = ""
+			this.structure.cfg.deleteFolder(targetFolder)
+			console.log("Folder deleted")
+			this.$toastr.s("Folder deleted")
+			this.rand = Math.round(Math.random() * 1000)
 		},
 
 		onFolderClose() {

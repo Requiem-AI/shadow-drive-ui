@@ -78,6 +78,20 @@ export class DriveConfig {
 
 		return null;
 	}
+
+	deleteFolder(folderName) {
+		console.log("Deleting folder: ", folderName)
+		delete this.folders[folderName]
+
+		const ok = Object.keys(this.folders)
+		for(let i=0;i<ok.length;i++) {
+			const idx = this.folders[ok[i]].folders.indexOf(folderName)
+			if (idx > -1) {
+				console.log(`Removing subfolder: ${folderName} - From: ${ok[i]} - Idx: ${idx}`, this.folders[ok[i]].folders)
+				this.folders[ok[i]].folders.splice(idx,1)
+			}
+		}
+	}
 }
 
 

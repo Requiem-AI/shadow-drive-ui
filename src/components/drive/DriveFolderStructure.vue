@@ -1,7 +1,8 @@
 <template>
 	<div>
 		<hr>
-		<DirectoryFolder :active="activeFolder" @active="onFolderActive" @add-folder="onFolderAdd" :structure="structure" :folder="structure.getRootName()"></DirectoryFolder>
+		<DirectoryFolder :active="activeFolder" @active="onFolderActive" @delete-folder="onFolderDelete" @add-folder="onFolderAdd" :structure="structure"
+				:folder="structure.getRootName()"></DirectoryFolder>
 	</div>
 </template>
 
@@ -31,6 +32,10 @@ export default {
 
 		onFolderActive:function(folder) {
 			this.$emit("active", folder)
+		},
+
+		onFolderDelete:function(folder) {
+			this.$emit("delete-folder", folder)
 		},
 	},
 }

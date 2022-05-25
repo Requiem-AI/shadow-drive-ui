@@ -1,12 +1,18 @@
 <template>
 	<div class="folder">
-		<span :class="isActive" class="noselect" @click="onFolderClick"><i class="fa fa-folder"></i></span> <span @click="onFolderNameClick" class="noselect" :class="isActive">{{ folder }}</span>
+		<span :class="isActive" class="noselect" @click="onFolderClick"><i class="fa fa-folder"></i></span> <span @click="onFolderNameClick" class="noselect" :class="isActive">{{
+			folder
+		}}</span> <span @click="onFolderTrashClick" v-show="isActive" class="float-end"><i class="fa fa-trash"></i></span>
 
 		<div class="inner mx-3 mb-2" :style="showClass">
-			<DirectoryFolder :active="active" @active="onFolderActive" @add-folder="onFolderAdd" :folder="folder" :structure="structure" :key="`${folder}-folder-${key}`" v-for="(folder,key) in subfolders"></DirectoryFolder>
+			<DirectoryFolder :show-files="showFiles" :active="active" @active="onFolderActive" @delete-folder="onFolderDelete" @add-folder="onFolderAdd" :folder="folder" :structure="structure"
+					:key="`${folder}-folder-${key}`"
+					v-for="(folder,key) in subfolders"></DirectoryFolder>
 
-			<div v-for="(file,key) in files" :key="`${folder}-file-${key}`">
-				<DirectoryFile :structure="structure" :file="file"></DirectoryFile>
+			<div v-if="showFiles">
+				<div v-for="(file,key) in files" :key="`${folder}-file-${key}`">
+					<DirectoryFile :structure="structure" :file="file"></DirectoryFile>
+				</div>
 			</div>
 
 			<div v-show="isActive" @click="addFolder(folder)" class="btn btn-folder">NEW</div>
@@ -16,6 +22,7 @@
 
 <script>
 import DirectoryFile from "./DirectoryFile";
+
 export default {
 	name: "DirectoryFolder",
 	components: {DirectoryFile},
@@ -29,6 +36,12 @@ export default {
 		},
 		active: {
 			type: String,
+		},
+		showFiles: {
+			type: Boolean,
+			default() {
+				return true;
+			}
 		}
 	},
 	data() {
@@ -45,7 +58,7 @@ export default {
 			return this.structure.getFolders(this.folder)
 		},
 
-		files: function() {
+		files: function () {
 			return this.structure.getFiles(this.folder)
 		},
 
@@ -76,12 +89,20 @@ export default {
 			this.onFolderNameClick()
 		},
 
-		onFolderNameClick: function() {
+		onFolderNameClick: function () {
 			this.$emit("active", this.folder)
+		},
+
+		onFolderTrashClick: function () {
+			this.onFolderDelete(this.folder)
 		},
 
 		onFolderAdd: function (folder) {
 			this.addFolder(folder)
+		},
+
+		onFolderDelete: function (folder) {
+			this.$emit("delete-folder", folder)
 		},
 
 		addFolder: function (folder) {
