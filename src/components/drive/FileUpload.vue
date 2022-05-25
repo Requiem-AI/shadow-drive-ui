@@ -24,6 +24,7 @@
 
 <script>
 import FileUploadInfo from "./FileUploadInfo";
+import JSZip from 'jszip';
 
 export default {
 	name: "FileUpload",
@@ -91,6 +92,27 @@ export default {
 			console.log("File dropped", file)
 			// handle file changes
 
+			if (file.type === "application/x-zip-compressed") {
+				JSZip.loadAsync(file).then((zip) => {
+					console.log("Zip loaded:", zip)
+
+
+					const ok = Object.keys(zip.files)
+					for (let i = 0; i < ok.length; i++) {
+						zip.file(ok[i]).async("blob").then(str => {
+							this.onFileAdded(new File([str], ok[i]))
+						})
+					}
+
+				});
+
+			} else {
+				this.onFileAdded(file)
+			}
+
+		},
+
+		onFileAdded: function (file) {
 			if (file.name.length > 32) {
 				const ext = "." + file.name.split('.').pop();
 				const shorterName = file.name.substr(0, 32 - ext.length) + ext
@@ -108,13 +130,9 @@ export default {
 				return
 			}
 
-			// file.status = 'pending'
-			// file.uri = URL.createObjectURL(file);
-			// file.progress = 0
-			// file.formData = formData
-
 			this.$emit("addFile", file)
-		},
+		}
+
 	},
 	mounted() {
 		this.$refs.uploader.addEventListener('dragover', this.onDragOver);
