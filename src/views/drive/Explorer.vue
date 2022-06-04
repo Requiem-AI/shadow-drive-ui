@@ -654,6 +654,9 @@ export default {
 			this.shadow.fileInfo(this.currentDrive).then((r) => {
 				let folderCalled = false;
 				r.forEach((f) => {
+					if (f === null)
+						return
+
 					if (!folderCalled && f.name === "_folder") {
 						this.getDriveFolderConfig()
 						folderCalled = true

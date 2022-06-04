@@ -1,11 +1,11 @@
 <template>
 	<a v-on:click="handleConnect">
-		<img src="@/assets/images/phantom_small.png"> <slot></slot>
+		<img src="@/assets/images/phantom_small.png">
+		<slot></slot>
 		{{ connected ? shortAddr : wallet_addr }}</a>
 </template>
 
 <script>
-import Web3 from 'web3'
 
 export default {
 	name: "Phantom",
@@ -45,15 +45,8 @@ export default {
 		connectWallet: function () {
 			if (typeof window.solana !== 'undefined') {
 				console.log('Phantom is installed!');
-
-				this.ethEnabled(); //Enable etherum connection
 				return
 			}
-		},
-
-		ethEnabled: function (provider) {
-			console.log("Phantom - Setting provider", provider);
-			window.web3 = new Web3(provider);
 		},
 
 		handleConnect: function () {
@@ -77,7 +70,7 @@ export default {
 			return null;
 		},
 
-		triggerAuth: function (provider) {
+		triggerAuth: function () {
 			const isPhantomInstalled = window.solana && window.solana.isPhantom
 			if (!isPhantomInstalled) {
 				this.wallet_addr = 'Onboarding in progress';
@@ -93,7 +86,7 @@ export default {
 
 			console.log('Phantom is installed!');
 
-			this.ethEnabled(provider); //Enable etherum connection
+			// this.ethEnabled(provider); //Enable etherum connection
 
 
 			window.solana.connect().then(this.handleAuthResponse).catch((e) => {

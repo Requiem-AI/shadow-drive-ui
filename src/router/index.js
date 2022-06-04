@@ -15,6 +15,11 @@ const routes = [
         component: () => import(/* webpackChunkName: "drive" */ '../views/drive/Explorer.vue')
     },
     {
+        path: '/drive/:id',
+        name: 'Drive Explorer',
+        component: () => import(/* webpackChunkName: "drive" */ '../views/drive/Explorer.vue')
+    },
+    {
         path: "*",
         redirect: "/"
     }
