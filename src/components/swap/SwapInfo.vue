@@ -62,7 +62,7 @@
 								<td>{{ quote.marketInfos.length }}</td>
 							</tr>
 							<tr>
-								<td>Quote Provider</td>
+								<td>Swap Provider</td>
 								<td><a target="_blank" href="https://jup.ag">Juipter AG</a></td>
 							</tr>
 							</tbody>
