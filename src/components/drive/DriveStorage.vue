@@ -32,11 +32,22 @@ export default {
 		},
 
 		storageAvailable: function () {
+			if (this.isV2)
+				return this.toSize(this.folder.account.reserved_bytes - this.folder.account.current_usage).toFixed(2)
+
 			return this.toSize(this.folder.account.storageAvailable).toFixed(2);
 		},
 		storageTotal: function () {
-			return this.toSize(this.folder.account.storage).toFixed(2);
+			let store = this.folder.account.storage
+			if (this.isV2)
+				store = this.folder.account.reserved_bytes
+
+			return this.toSize(store).toFixed(2);
 		},
+
+		isV2: function() {
+			return !this.folder.account.owner2;
+		}
 	},
 	methods: {
 		toSize: function (s) {

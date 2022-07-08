@@ -51,7 +51,8 @@ export default {
 	},
 	computed: {
 		canUpload: function () {
-			return this.uploadSize < this.drive.account.storageAvailable;
+			const avail = this.drive.account.storageAvailable || (this.drive.account.reserved_bytes - this.drive.account.current_usage)
+			return this.uploadSize < avail;
 		},
 
 		uploadSize: function () {

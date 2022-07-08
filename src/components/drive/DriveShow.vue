@@ -2,7 +2,7 @@
 	<div class="drive-show">
 		<div class="row mb-3" v-show="drive !== null">
 			<div class="col-sm-12 col-md-6 col-lg-3">
-				<span class="inlineh4 mt-2">{{ drive.account.identifier }}</span>
+				<span class="inlineh4 mt-2"><span class="badge bg-info">{{ drive.account.owner2 ? 'V1' : 'V2' }}</span> {{ drive.account.identifier }}</span>
 				<DriveLock class="d-inline mx-3" :folder="drive"></DriveLock>
 				<span v-if="drive.account.toBeDeleted" class="badge bg-danger">PENDING DELETION</span>
 			</div>
@@ -40,7 +40,7 @@
 			<div class="col">
 				<p>Owner(s): </p>
 				<code>{{ drive.account.owner1.toString() }}</code>
-				<code v-if="drive.account.owner2.toString() !== drive.account.owner1.toString()">{{
+				<code v-if="drive.account.owner2 && drive.account.owner2.toString() !== drive.account.owner1.toString()">{{
 						drive.account.owner2.toString()
 					}}</code>
 			</div>

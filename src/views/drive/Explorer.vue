@@ -537,7 +537,8 @@ export default {
 		},
 		onDriveSizeIncrease(data) {
 			this.loading = true;
-			this.shadow.increaseSize(this.activeDrive, data.size, data.denom).then((resp) => {
+			console.log("Increase", data)
+			this.shadow.increaseSize(this.activeDrive, data.size, data.denom, data).then((resp) => {
 				console.log("Drive size update", resp);
 				this.$toastr.s("Drive size updated");
 

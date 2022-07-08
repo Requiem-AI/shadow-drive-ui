@@ -52,6 +52,7 @@ export default {
 		},
 
 		getInfo: function () {
+			console.log("Getting info", this.url)
 			axios.post("https://shadow-storage.genesysgo.net/get-object-data", {location: this.url}).then((r) => {
 				console.log("file info", r.data)
 				this.info = r.data.file_data;
