@@ -1,5 +1,5 @@
 // import {ShdwDrive} from "@alphabatem/metaplex-shadow-drive";
-import {ShdwDrive} from "@shadow-drive/sdk";
+import {ShdwDrive} from "@cloakd/shadow-drive";
 import {PhantomWalletAdapter} from '@solana/wallet-adapter-wallets';
 import axios from 'axios'
 import {BN, web3} from "@project-serum/anchor";
