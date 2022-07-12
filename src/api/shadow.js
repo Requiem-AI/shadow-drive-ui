@@ -173,9 +173,10 @@ export class Shadow {
 		return this.drive.uploadMultipleFiles(pk, daraArr);
 	}
 
-	async deleteFile(drive, fileUrl) {
+	async deleteFile(drive, fileUrl, version = "v2") {
 		const pk = new web3.PublicKey(drive)
-		return this.drive.deleteFile(pk, fileUrl);
+		console.log("Deleting file: ", pk.toString(), fileUrl, version)
+		return this.drive.deleteFile(pk, fileUrl, version);
 	}
 
 	async setImmutable(drive) {
