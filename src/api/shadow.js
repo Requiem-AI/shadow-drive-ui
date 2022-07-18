@@ -1,5 +1,6 @@
 // import {ShdwDrive} from "@alphabatem/metaplex-shadow-drive";
 import {ShdwDrive} from "@cloakd/shadow-drive";
+// import {ShdwDrive} from "@shadow-drive/sdk";
 import {PhantomWalletAdapter} from '@solana/wallet-adapter-wallets';
 import axios from 'axios'
 import {BN, web3} from "@project-serum/anchor";
@@ -58,9 +59,13 @@ export class Shadow {
 
 		for (let i = 0; i < v2Accs.length; i++) {
 			console.log("Getting info: %v", v2Accs[i].publicKey)
-			const info = await this.driveInfo(v2Accs[i].publicKey)
-			v2Accs[i].account = Object.assign(v2Accs[i].account, info.data)
-			console.log("Info: ", v2Accs[i])
+			try {
+				const info = await this.driveInfo(v2Accs[i].publicKey)
+				v2Accs[i].account = Object.assign(v2Accs[i].account, info.data)
+				console.log("Info: ", v2Accs[i])
+			} catch (e) {
+				console.log("e", e)
+			}
 		}
 
 		this.v1Drives = {}
@@ -175,7 +180,7 @@ export class Shadow {
 
 	async deleteFile(drive, fileUrl, version = "v2") {
 		const pk = new web3.PublicKey(drive)
-		console.log("Deleting file: ", pk.toString(), fileUrl, version)
+		console.log("Deleting file: ", pk, fileUrl, version)
 		return this.drive.deleteFile(pk, fileUrl, version);
 	}
 

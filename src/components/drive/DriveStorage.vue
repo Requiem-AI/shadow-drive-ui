@@ -46,7 +46,7 @@ export default {
 		},
 
 		isV2: function() {
-			return !this.folder.account.owner2;
+			return !this.folder.account.owner2 || this.folder.version === "V2";
 		}
 	},
 	methods: {

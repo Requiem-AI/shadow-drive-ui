@@ -100,31 +100,24 @@ export default {
 				JSZip.loadAsync(file).then((zip) => {
 					console.log("Zip loaded:", zip)
 
+					zip.forEach((relativePath, file) => {
+						console.log("Filke", file, relativePath)
 
-					const ok = Object.keys(zip.files)
-					for (let i = 0; i < ok.length; i++) {
-						// console.log("Loading zip file: ", ok[i])
+						if (file.dir) {
+							//TODO handle dir
+							return
+						}
 
-						const parts = ok[i].split("/")
-						const file = parts.pop();
+						const parts = file.name.split("/")
+						const fileName = parts.pop();
 						const folder = parts.pop() || "";
 						const folderParent = parts.pop() || "";
 
-						console.log("Adding folder", folder)
-						this.$emit("addFolder", folder, folderParent)
-						if (zip.files[ok[i]].dir) {
-							continue
-						}
-
-
-						console.log("Adding file to folder", folder, file)
-						this.$emit("setFileFolder", folder, file)
-
-						zip.file(ok[i]).async("blob").then(str => {
-							this.onFileAdded(new File([str], file), folder, folderParent)
+						file.async("blob").then(str => {
+							this.onFileAdded(new File([str], fileName), folder, folderParent)
 						})
-					}
 
+					})
 				});
 
 			} else {

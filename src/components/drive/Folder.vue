@@ -1,14 +1,14 @@
 <template>
 	<div class="folder" :class="`folder ${active ? 'active' : ''}`" @click="onClick">
 		<div class="row">
-			<div class="col-sm-11 col-lg-6">
+			<div class="col">
 				<h5 data-toggle="tooltip" data-placement="top" :title="folder.publicKey"><VersionBadge :folder="folder"></VersionBadge> {{
 						folder.account.identifier }}</h5>
 			</div>
-			<div class="col-sm-10 col-lg-5 size text-center">
+			<div class="col-auto size text-center">
 				<DriveStorage :folder="folder"></DriveStorage>
 			</div>
-			<div class="col-sm-2 col-lg-1 text-right">
+			<div class="col-auto text-right">
 				<DriveLock :folder="folder"></DriveLock>
 			</div>
 		</div>

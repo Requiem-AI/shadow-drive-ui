@@ -7,6 +7,7 @@
 						<div class="row">
 							<h4 class="col-auto">Drives</h4>
 							<div class="col text-right">
+								<button @click="driveIndex" class="btn btn-secondary btn-sm me-1"><i class="fa fa-refresh"></i></button>
 								<button @click="showSearch" class="btn btn-secondary btn-sm me-1"><i class="fa fa-search"></i></button>
 								<button @click="showCreate" class="btn btn-primary btn-sm">New</button>
 							</div>
@@ -575,7 +576,7 @@ export default {
 				this.indexFiles();
 
 			}).catch((err) => {
-				console.log("File delete error", err.message);
+				console.error("File delete error", err);
 				this.$toastr.e("Unable to delete file");
 			}).finally(() => {
 				this.loading = false;

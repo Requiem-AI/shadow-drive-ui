@@ -61,7 +61,7 @@ export default {
 	},
 	data() {
 		return {
-			BYTE_TO_SHDW: 1000000000,
+			BYTE_TO_SHDW: 4000000000, //0.25SHDW per GB
 			form: {
 				name: "",
 				size: 1,

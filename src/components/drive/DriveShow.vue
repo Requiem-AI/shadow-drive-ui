@@ -27,7 +27,7 @@
 			<div v-if="!readOnly" class="col-4 col-md-4 col-lg-1">
 				<button class="btn btn-secondary btn-block btn-sm" @click="$emit('freeze')">Freeze</button>
 			</div>
-			<div class="col-4 col-lg-2" v-if="drive.account.toBeDeleted && !readOnly">
+			<div class="col-4 col-md-4 col-lg-1" v-if="drive.account.toBeDeleted && !readOnly">
 				<button class="btn btn-danger btn-block btn-sm" @click="$emit('undelete')">Cancel Delete</button>
 			</div>
 		</div>
@@ -145,7 +145,6 @@
 				</div>
 			</div>
 		</div>
-
 		<!--		<div class="file-container row mt-3" v-if="tableView">-->
 		<!--			<div class="col" v-for="(file,key) in files" :key="key">-->
 		<!--				<FileThumbnail @delete="onDeleteFile" :file="file"></FileThumbnail>-->

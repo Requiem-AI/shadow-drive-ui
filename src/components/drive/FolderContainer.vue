@@ -39,5 +39,9 @@ export default {
 </script>
 
 <style scoped>
-
+.folder-container {
+	max-height: 400px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
 </style>
