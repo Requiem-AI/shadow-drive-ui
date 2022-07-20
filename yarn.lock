@@ -954,16 +954,17 @@
     eip1193-provider "^1.0.1"
     js-sha3 "^0.8.0"
 
-"@cloakd/shadow-drive@^3.0.1":
-  version "3.0.12"
-  resolved "https://registry.yarnpkg.com/@cloakd/shadow-drive/-/shadow-drive-3.0.12.tgz#4bca4c82626e347488da5bf05e4725b298e25e46"
-  integrity sha512-CH2n2UoStkrUzAR+zsqnLL078ZhG9v70U4tOMpMcOAMsrPWST/hOWCJszfLyUt6dwwR5uvXCAJ29acYSa8BKZA==
+"@cloakd/shadow-drive@^3.0.3":
+  version "3.0.13"
+  resolved "https://registry.yarnpkg.com/@cloakd/shadow-drive/-/shadow-drive-3.0.13.tgz#939d9e23dee1f59a83babbf07050e2fa55fcd6da"
+  integrity sha512-A7aCn9wNqgnYy8STO2Q0FAC/lw6rvcqklJrthuRGy5IyZ5UxDH7fbMk9VJDpaUrw+2/rZRpptYfl64sKl34QGA==
   dependencies:
     "@project-serum/anchor" "^0.24.2"
     "@solana/spl-token" "^0.2.0"
     cross-fetch "^3.1.5"
     form-data "^4.0.0"
     node-fetch "2"
+    rxjs "^7.5.5"
     tweetnacl "^1.0.3"
 
 "@discoveryjs/json-ext@^0.5.0":
@@ -8607,7 +8608,7 @@ rxjs@6, rxjs@^6.6.0:
   dependencies:
     tslib "^1.9.0"
 
-rxjs@^7.1.0:
+rxjs@^7.1.0, rxjs@^7.5.5:
   version "7.5.6"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.5.6.tgz#0446577557862afd6903517ce7cae79ecb9662bc"
   integrity sha512-dnyv2/YsXhnm461G+R/Pe5bWP41Nm6LBXEYWI6eiFP4fiwx6WRI/CD0zbdVAudd9xwLEF2IDcKXLHit0FYjUzw==
