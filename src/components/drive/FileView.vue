@@ -69,7 +69,7 @@
 					class="btn btn-outline-secondary btn-block btn-sm"><i
 					class="fa fa-download"></i> Download</a></div>
 			<div class="mt-2 col-6 col-md-4 col-lg-2">
-				<button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-edit"></i> Edit</button>
+				<button @click="$emit('edit')" class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-edit"></i> Edit</button>
 			</div>
 			<div class="mt-2 col-6 col-md-4 col-lg-2">
 				<button @click="$emit('share')" class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-link"></i> Share</button>

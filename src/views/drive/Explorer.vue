@@ -342,6 +342,7 @@ export default {
 				}
 
 				this.indexFiles();
+				this.uploadFiles = []; //All good so clear down arr
 
 			}).catch((err) => {
 				console.log("File upload error", err);
@@ -574,7 +575,9 @@ export default {
 			this.shadow.deleteFile(this.activeDrive, f.url).then((resp) => {
 				console.log("File deleted", resp);
 				this.$toastr.s("File deleted");
-				this.indexFiles();
+				this.$nextTick(() => {
+					this.indexFiles();
+				})
 
 			}).catch((err) => {
 				console.error("File delete error", err);
