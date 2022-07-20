@@ -7,8 +7,7 @@
 				<input pattern="^[1-9A-HJ-NP-Za-km-z]{32,44}$" required v-model="search" class="form-control form-control-lg text-center" placeholder="Drive Address">
 
 				<div class="mt-3">
-					<Phantom v-if="!$store.state.wallet_connected" class="btn btn-outline-light"></Phantom>
-					<button v-else type="submit" class="btn btn-outline-light"><i class="fa fa-search"></i> Explore Drive</button>
+					<button type="submit" class="btn btn-outline-light"><i class="fa fa-search"></i> Explore Drive</button>
 				</div>
 			</form>
 		</div>
@@ -20,10 +19,9 @@
 </template>
 
 <script>
-import Phantom from "../wallet/Phantom";
+
 export default {
 	name: "DriveSearch",
-	components: {Phantom},
 	data() {
 		return {
 			search: '',
@@ -32,7 +30,11 @@ export default {
 	methods: {
 		onSearch(e) {
 			e.preventDefault();
-			this.$emit("search", this.search)
+			// this.$emit("search", this.search)
+
+			console.log("Going to ", `/drives/${this.search}`)
+			this.$router.push(`/drives/${this.search}`)
+
 		}
 	}
 }

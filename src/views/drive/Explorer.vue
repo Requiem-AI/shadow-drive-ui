@@ -7,14 +7,14 @@
 						<div class="row">
 							<h4 class="col-auto">Drives</h4>
 							<div class="col text-right">
-								<button @click="driveIndex" class="btn btn-secondary btn-sm me-1"><i class="fa fa-refresh"></i></button>
+								<button @click="driveRefresh" class="btn btn-secondary btn-sm me-1"><i class="fa fa-refresh"></i></button>
 								<button @click="showSearch" class="btn btn-secondary btn-sm me-1"><i class="fa fa-search"></i></button>
 								<button @click="showCreate" class="btn btn-primary btn-sm">New</button>
 							</div>
 						</div>
 					</div>
 					<div class="card-body">
-						<FolderContainer @active="onVisitDrive" :folders="drives" :activeDrive="activeDrive" :loading="loading"></FolderContainer>
+						<FolderContainer @active="onVisitDrive" :folders="drives" :activeDrive="activeDrive" :loading="loading" :key="folderRefreshIdx"></FolderContainer>
 						<DriveFolderStructure :key="rand" v-if="structure !== null" v-show="activeDrive !== ''" @active="onFolderActive" @add-folder="onFolderAdd"
 								@delete-folder="onFolderDelete"
 								:active-drive="activeDrive" :active-folder="activeFolder" :structure="structure"></DriveFolderStructure>
@@ -108,7 +108,7 @@ export default {
 			activeFolder: "",
 			activeDrive: "",
 			search: "",
-			rand:'',
+			rand: '',
 			drives: [],
 			files: {},
 			uploadFiles: [],
@@ -117,6 +117,7 @@ export default {
 			structure: null,
 			newFolder: null,
 			fileToMove: null,
+			folderRefreshIdx: 0,
 		}
 	},
 	watch: {
@@ -705,16 +706,42 @@ export default {
 			});
 		},
 
-		driveIndex() {
-			this.loading = true;
+		driveRefresh() {
+			this.driveIndex(false)
+		},
+
+		async loadV2DriveInfo() {
+			for (let i = 0; i < this.drives.length; i++) {
+				if (this.drives[i].account.owner2) {
+					continue
+				}
+
+				try {
+					const info = await this.shadow.driveInfo(this.drives[i].publicKey)
+					this.drives[i].account = Object.assign(this.drives[i].account, info.data)
+				} catch (e) {
+					console.log("e", e)
+				}
+			}
+			this.folderRefreshIdx++;
+		},
+
+		driveIndex(loading = true) {
+			if (loading)
+				this.loading = true;
+
 			this.shadow.index().then((resp) => {
 				console.log("IndexDrives::", resp);
 				this.drives = resp;
+				this.$toastr.s("Drives loaded");
+				this.loadV2DriveInfo();
+
 			}).catch((err) => {
 				console.log("DriveIndex error", err);
 				this.$toastr.e("Unable to load drives");
 			}).finally(() => {
-				this.loading = false;
+				if (loading)
+					this.loading = false;
 			});
 		},
 

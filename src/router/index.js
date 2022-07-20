@@ -15,9 +15,9 @@ const routes = [
         component: () => import(/* webpackChunkName: "drive" */ '../views/drive/Explorer.vue')
     },
     {
-        path: '/drive/:id',
-        name: 'Drive Explorer',
-        component: () => import(/* webpackChunkName: "drive" */ '../views/drive/Explorer.vue')
+        path: '/drives/:id',
+        name: 'Drive Show',
+        component: () => import(/* webpackChunkName: "drive" */ '../views/drive/DriveInfo.vue')
     },
     {
         path: "*",

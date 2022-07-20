@@ -12,6 +12,7 @@
 		</div>
 
 		<div class="col-12 file-load">
+			<model-viewer camera-controls auto-rotate  v-if="isGLB" :src="url" class="viewer"></model-viewer>
 			<img alt="file image" v-if="isImage" :src="url">
 			<video controls v-if="isVideo" width="75%">
 				<source :src="url">
@@ -50,18 +51,22 @@
 				<!--				</div>-->
 
 				<div class="info col-sm-12 col-md-12">
-					<p class="">File Url: </p> <a target="_blank" :href="file.url" class="x-small">{{ file.url }}</a>
-					<p class="mt-3">Hosted Url: </p> <a target="_blank" :href="hostUrl" class="x-small">{{ hostUrl }}</a>
+					<hr>
+					<p class="mb-0">Page Url: </p> <a target="_blank" :href="pageLocation" class="x-small">{{ pageLocation }}</a>
+					<p class="mt-3 mb-0">Source Url: </p> <a target="_blank" :href="file.url" class="x-small">{{ file.url }}</a>
+					<p class="mt-3 mb-0">Hosted Url: </p> <a target="_blank" :href="hostUrl" class="x-small">{{ hostUrl }}</a>
 				</div>
-
 			</div>
+
+			<hr>
 		</div>
 
-		<div class="row text-center" v-if="!readonly">
+		<div class="row text-center mb-3">
 <!--			<div class="mt-2 col-6 col-md-4 col-lg-2 offset-lg-1">-->
 <!--				<button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-eye"></i> View</button>-->
 <!--			</div>-->
-			<div class="mt-2 col-6 col-md-4 col-lg-2 offset-lg-2"><a :download="file.name" :href="file.url" class="btn btn-outline-secondary btn-block btn-sm"><i
+			<div class="mt-2 col-6 col-md-4 col-lg-2" :class="`${readonly? 'offset-lg-3' : 'offset-lg-2'}`"><a :download="file.name" :href="file.url"
+					class="btn btn-outline-secondary btn-block btn-sm"><i
 					class="fa fa-download"></i> Download</a></div>
 			<div class="mt-2 col-6 col-md-4 col-lg-2">
 				<button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-edit"></i> Edit</button>
@@ -69,7 +74,7 @@
 			<div class="mt-2 col-6 col-md-4 col-lg-2">
 				<button @click="$emit('share')" class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-link"></i> Share</button>
 			</div>
-			<div class="mt-2 col-6 col-md-4 col-lg-2">
+			<div class="mt-2 col-6 col-md-4 col-lg-2" v-if="!readonly">
 				<button class="btn btn-outline-secondary btn-block btn-sm"><i class="fa fa-trash"></i> Delete</button>
 			</div>
 		</div>
@@ -79,6 +84,7 @@
 </template>
 
 <script>
+import "@google/model-viewer"
 import md5 from 'md5';
 import axios from "axios";
 
@@ -123,11 +129,19 @@ export default {
 				download: {
 					"_folder": true,
 					"": true,
+				},
+				glb: {
+					"glb": true,
+					"gltf": true,
 				}
 			}
 		}
 	},
 	computed: {
+		pageLocation: function() {
+			return window.location.href
+		},
+
 		ext: function () {
 			const ext = this.file.name.split(".").pop();
 			if (ext === this.file.name && !this.formats.download[ext])
@@ -136,6 +150,9 @@ export default {
 			return ext.toLowerCase()
 		},
 
+		isGLB: function() {
+			return this.formats.glb[this.ext]
+		},
 		isImage: function () {
 			return this.formats.image[this.ext]
 		},
@@ -257,7 +274,7 @@ img {
 	font-weight: bold;
 }
 
-.info p:nth-child(3), .info p:nth-child(1) {
+.info p:nth-child(odd) {
 	font-weight: bold;
 	margin-bottom: 0;
 }
@@ -273,5 +290,13 @@ img {
 	padding: 1%;
 	border-radius: 7px;
 	max-height: 525px;
+}
+
+model-viewer {
+	width: 100%;
+	height: 100%;
+	min-height: 400px;
+	--poster-color: transparent;
+	background: transparent;
 }
 </style>

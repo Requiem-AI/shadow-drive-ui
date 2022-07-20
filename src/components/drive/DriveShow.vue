@@ -1,7 +1,7 @@
 <template>
 	<div class="drive-show">
 		<div class="row mb-3" v-show="drive !== null">
-			<div class="col-sm-12 col-md-6 col-lg-3">
+			<div :class="`${readOnly ? 'col-auto' : 'col-sm-12 col-md-6 col-lg-3' }`">
 				<span class="inlineh4 mt-2"><span class="badge bg-info">{{ drive.account.owner2 ? 'V1' : 'V2' }}</span> {{ drive.account.identifier }}</span>
 				<DriveLock class="d-inline mx-3" :folder="drive"></DriveLock>
 				<span v-if="drive.account.toBeDeleted" class="badge bg-danger">PENDING DELETION</span>
@@ -196,6 +196,12 @@ export default {
 				return ""
 			}
 		},
+		showFile: {
+			type: Object,
+			default() {
+				return null
+			}
+		},
 		showFileInfo: {
 			type: Boolean,
 			default: false,
@@ -246,6 +252,9 @@ export default {
 			this.search = '';
 			this.onSearch()
 			this.$emit("file-info", true)
+
+			if (this.$route.query.file !== "" && this.$route.query.file !== f.name)
+				this.$router.replace({ path: this.$route.path, query: { file: f.name }})
 		},
 
 		hideFileInfo:function() {
@@ -338,6 +347,11 @@ export default {
 			this.onFolderSelected(lastFolder)
 		}
 	},
+	mounted() {
+		if(this.showFile) {
+			this.setActiveFile(this.showFile)
+		}
+	}
 }
 </script>
 

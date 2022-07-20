@@ -13,7 +13,7 @@ export class Shadow {
 
 	drive = null
 
-	wallet;
+	wallet = null;
 
 	v1Drives = {
 		//
@@ -23,10 +23,17 @@ export class Shadow {
 		const pk = new PhantomWalletAdapter();
 		await pk.connect();
 
-		this._startConnection();
-
 		console.log("PK: ", pk)
 		this.wallet = pk._wallet;
+		await this.connect()
+	}
+
+	async connect() {
+		this._startConnection();
+
+		if (this.wallet == null)
+			this.wallet = {publicKey: new web3.PublicKey("4oSpA8vu2n4VEQbmieUjMnJCp6HtD3JdHE47LdxCD2h4")} //Fresh sollet wallet burner
+
 		this.drive = await new ShdwDrive(this.connection, this.wallet).init();
 		console.log("Connected to shadow drive");
 	}
@@ -56,17 +63,6 @@ export class Shadow {
 	async index() {
 		const v1Accs = await this.drive.getStorageAccounts("v1")
 		const v2Accs = await this.drive.getStorageAccounts("v2")
-
-		for (let i = 0; i < v2Accs.length; i++) {
-			console.log("Getting info: %v", v2Accs[i].publicKey)
-			try {
-				const info = await this.driveInfo(v2Accs[i].publicKey)
-				v2Accs[i].account = Object.assign(v2Accs[i].account, info.data)
-				console.log("Info: ", v2Accs[i])
-			} catch (e) {
-				console.log("e", e)
-			}
-		}
 
 		this.v1Drives = {}
 		v1Accs.map((a) => this.v1Drives[a.publicKey] = true)
@@ -190,7 +186,7 @@ export class Shadow {
 	}
 
 	async fileInfo(drive) {
-		console.log("Getting file info: ", drive)
+		console.log("Getting file info: ", drive.account)
 
 		if (!drive.account.owner2) {
 			return await this.indexFiles(drive.publicKey)

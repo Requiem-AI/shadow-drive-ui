@@ -5,16 +5,14 @@
 				<h5 data-toggle="tooltip" data-placement="top" :title="folder.publicKey"><VersionBadge :folder="folder"></VersionBadge> {{
 						folder.account.identifier }}</h5>
 			</div>
+			<div class="col-auto" v-if="folder.account.toBeDeleted">
+				<span class="badge bg-danger">Deleting</span>
+			</div>
 			<div class="col-auto size text-center">
 				<DriveStorage :folder="folder"></DriveStorage>
 			</div>
 			<div class="col-auto text-right">
 				<DriveLock :folder="folder"></DriveLock>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col" v-if="folder.account.toBeDeleted">
-				<span class="badge bg-danger">Deleting</span>
 			</div>
 		</div>
 	</div>

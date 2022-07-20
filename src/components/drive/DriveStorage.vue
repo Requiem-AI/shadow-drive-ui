@@ -1,6 +1,7 @@
 <template>
 	<div>
-		<span>{{ storageUsed }} {{ sizeDenom }}</span> / <span>{{ storageTotal }} {{ sizeDenom }}</span>
+<!--		<span>{{ storageUsed }} {{ sizeDenom }}</span> / <span>{{ storageTotal }} {{ sizeDenom }}</span>-->
+		<span>{{ storageTotal }} {{ sizeDenom }}</span>
 	</div>
 </template>
 
@@ -15,13 +16,18 @@ export default {
 	},
 	computed: {
 		sizeDenom: function () {
-			if (this.folder.account.storage < 1024) {
+			const bytes = this.folder.account.storage ||  this.folder.account.reserved_bytes
+
+			if (!bytes)
+				return ""
+
+			if (bytes < 1024) {
 				return "B";
 			}
-			if (this.folder.account.storage < 1048576) {
+			if (bytes < 1048576) {
 				return "KB";
 			}
-			if (this.folder.account.storage < 1073741824) {
+			if (bytes < 1073741824) {
 				return "MB";
 			}
 			return "GB";
@@ -42,6 +48,10 @@ export default {
 			if (this.isV2)
 				store = this.folder.account.reserved_bytes
 
+			if (!store)
+				return "Loading"
+
+			console.log("StorageTotal", store)
 			return this.toSize(store).toFixed(2);
 		},
 
@@ -61,6 +71,8 @@ export default {
 				case "GB":
 					return s / 1024 / 1024 / 1024;
 			}
+
+			return s
 		}
 	}
 }
