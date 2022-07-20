@@ -6,7 +6,7 @@
 		<div class="text-center" v-if="folders.length === 0">
 			<i v-show="loading">Loading...</i>
 
-			<i v-if="$store.state.wallet_connected" v-show="loading">No Drives Created</i>
+			<i v-if="$store.state.wallet_connected" v-show="!loading">No Drives Created</i>
 			<i v-else>
 				<Phantom class="btn btn-outline-light"></Phantom>
 			</i>
