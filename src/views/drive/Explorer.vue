@@ -141,6 +141,8 @@ export default {
 				if (folderName === this.structure.getRootName())
 					includes = this.files; //Root so include all files
 				else
+					console.log("Files1", this.structure.getFiles(folderName), folderName, this.structure)
+
 					this.structure.getFiles(folderName).forEach((i) => {
 						includes[i] = this.files[i]
 					}) //Custom folder so filter based on that
@@ -207,9 +209,9 @@ export default {
 			let promise;
 
 			if (this.files["_folder"]) {
-				promise = this.shadow.editFile(this.activeDrive, url, file)
+				promise = this.$store.state.shadow.editFile(this.activeDrive, url, file)
 			} else {
-				promise = this.shadow.uploadFile(this.activeDrive, file)
+				promise = this.$store.state.shadow.uploadFile(this.activeDrive, file)
 			}
 
 			this.loading = true;
@@ -235,7 +237,7 @@ export default {
 
 		onDriveCreate(cfg) {
 			this.loading = true;
-			this.shadow.create(cfg.name, cfg.size, cfg.denom).then((resp) => {
+			this.$store.state.shadow.create(cfg.name, cfg.size, cfg.denom).then((resp) => {
 				console.log("Drive created", resp);
 				this.$toastr.s("Drive created");
 				this.hideCreate();
@@ -332,7 +334,7 @@ export default {
 				files.push(uploadArr[i].file)
 			}
 
-			this.shadow.uploadMultipleFiles(this.activeDrive, files).then((resp) => {
+			this.$store.state.shadow.uploadMultipleFiles(this.activeDrive, files).then((resp) => {
 				console.log("File Uploaded", resp);
 				this.$toastr.s("Files Uploaded");
 
@@ -372,7 +374,7 @@ export default {
 
 			console.log("Attempting to upload file", data);
 			uploadReq.status = "uploading"
-			this.shadow.uploadFile(this.activeDrive, data).then((resp) => {
+			this.$store.state.shadow.uploadFile(this.activeDrive, data).then((resp) => {
 				console.log("File Uploaded", resp);
 				this.$toastr.s("File Uploaded");
 
@@ -409,7 +411,7 @@ export default {
 			this.structure.cfg.addFile(folder, file)
 		},
 
-		onFolderAdded(folder, parent) {
+		onFolderAdded(parent, folder) {
 			return this.structure.cfg.addFolder(parent, folder)
 		},
 
@@ -458,7 +460,7 @@ export default {
 
 			this.loading = true;
 
-			// this.shadow.indexFiles(driveAddress).then((resp) => {
+			// this.$store.state.shadow.indexFiles(driveAddress).then((resp) => {
 			// 	// console.log("Drives", resp);
 			// 	this.drives = resp;
 			// 	this.onVisitDrive(driveAddress)
@@ -469,12 +471,12 @@ export default {
 			// 	this.loading = false;
 			// });
 
-			this.shadow.show(driveAddress).then((resp) => {
+			this.$store.state.shadow.show(driveAddress).then((resp) => {
 				console.log("ShowDrives::", resp);
 
 				if (!this.drives.filter((d) => d.publicKey.toString() === driveAddress).length) {
 					console.log("Adding drive to array")
-					this.drives.push({account: resp, publicKey: this.shadow.toPublicKey(driveAddress)});
+					this.drives.push({account: resp, publicKey: this.$store.state.shadow.toPublicKey(driveAddress)});
 				}
 
 				this.onVisitDrive(driveAddress)
@@ -502,7 +504,7 @@ export default {
 
 		indexFiles() {
 			this.onDriveInfo();
-			// this.shadow.indexFiles(this.activeDrive).then((r) => {
+			// this.$store.state.shadow.indexFiles(this.activeDrive).then((r) => {
 			// 	r.data.keys.forEach((key) => {
 			// 		this.files[key] = {
 			// 			name: key
@@ -541,7 +543,7 @@ export default {
 		onDriveSizeIncrease(data) {
 			this.loading = true;
 			console.log("Increase", data)
-			this.shadow.increaseSize(this.activeDrive, data.size, data.denom, data).then((resp) => {
+			this.$store.state.shadow.increaseSize(this.activeDrive, data.size, data.denom, data).then((resp) => {
 				console.log("Drive size update", resp);
 				this.$toastr.s("Drive size updated");
 
@@ -556,7 +558,7 @@ export default {
 		},
 		onDriveSizeReduce(data) {
 			this.loading = true;
-			this.shadow.reduceSize(this.activeDrive, data.size, data.denom).then((resp) => {
+			this.$store.state.shadow.reduceSize(this.activeDrive, data.size, data.denom).then((resp) => {
 				console.log("Drive size update", resp);
 				this.$toastr.s("Drive size updated");
 
@@ -572,7 +574,7 @@ export default {
 		onFileDelete(f) {
 			console.log("Deleting file: ", this.activeDrive, f.url)
 			this.loading = true;
-			this.shadow.deleteFile(this.activeDrive, f.url).then((resp) => {
+			this.$store.state.shadow.deleteFile(this.activeDrive, f.url).then((resp) => {
 				console.log("File deleted", resp);
 				this.$toastr.s("File deleted");
 				this.$nextTick(() => {
@@ -588,7 +590,7 @@ export default {
 		},
 		onDriveDelete() {
 			this.loading = true;
-			this.shadow.delete(this.activeDrive).then((resp) => {
+			this.$store.state.shadow.delete(this.activeDrive).then((resp) => {
 				console.log("Drive deleted", resp);
 				this.$toastr.s("Drive deleted");
 
@@ -603,7 +605,7 @@ export default {
 		},
 		onDriveUnDelete() {
 			this.loading = true;
-			this.shadow.undelete(this.activeDrive).then((resp) => {
+			this.$store.state.shadow.undelete(this.activeDrive).then((resp) => {
 				console.log("Drive un-deleted", resp);
 				this.$toastr.s("Drive delete cancelled");
 
@@ -619,7 +621,7 @@ export default {
 		},
 		onDriveFreeze() {
 			this.loading = true;
-			this.shadow.setImmutable(this.activeDrive).then((resp) => {
+			this.$store.state.shadow.setImmutable(this.activeDrive).then((resp) => {
 				console.log("Drive frozen", resp);
 				this.$toastr.s("Drive Frozen");
 
@@ -657,7 +659,7 @@ export default {
 		},
 
 		onDriveInfo() {
-			this.shadow.fileInfo(this.currentDrive).then((r) => {
+			this.$store.state.shadow.fileInfo(this.currentDrive).then((r) => {
 				let folderCalled = false;
 				r.forEach((f) => {
 					if (f === null)
@@ -700,7 +702,7 @@ export default {
 		},
 
 		driveShow(id) {
-			this.shadow.show(id).then((resp) => {
+			this.$store.state.shadow.show(id).then((resp) => {
 				console.log("Drive", resp);
 				this.currenDrive = resp;
 			}).catch((err) => {
@@ -720,7 +722,7 @@ export default {
 				}
 
 				try {
-					const info = await this.shadow.driveInfo(this.drives[i].publicKey)
+					const info = await this.$store.state.shadow.driveInfo(this.drives[i].publicKey)
 					this.drives[i].account = Object.assign(this.drives[i].account, info.data)
 				} catch (e) {
 					console.log("e", e)
@@ -733,7 +735,7 @@ export default {
 			if (loading)
 				this.loading = true;
 
-			this.shadow.index().then((resp) => {
+			this.$store.state.shadow.index().then((resp) => {
 				console.log("IndexDrives::", resp);
 				this.drives = resp;
 				this.$toastr.s("Drives loaded");
@@ -749,13 +751,13 @@ export default {
 		},
 
 		async onWalletConnected() {
-			await this.shadow.initDrive(this.$store.state.wallet_addr);
+			await this.$store.state.shadow.initDrive(this.$store.state.wallet_addr);
 			this.driveIndex()
 			this.getBalances();
 		},
 
 		getBalances() {
-			this.shadow.getSHDWBalances(this.$store.state.wallet_addr).then(r => {
+			this.$store.state.shadow.getSHDWBalances(this.$store.state.wallet_addr).then(r => {
 				const token = r.value[0];
 				let amount
 				if (!token) {
@@ -770,14 +772,14 @@ export default {
 				});
 			})
 
-			this.shadow.getSOLBalance(this.$store.state.wallet_addr).then(r => {
+			this.$store.state.shadow.getSOLBalance(this.$store.state.wallet_addr).then(r => {
 				console.log("SOL", r)
 				this.$store.commit('set_token_balance', {key: "sol", value: (r / LAMPORTS_PER_SOL).toFixed(4)});
 			})
 		}
 	},
 	mounted() {
-		this.shadow = new Shadow();
+		this.$store.commit('set_shadow', new Shadow());
 		if (this.$store.state.wallet_connected) {
 			this.onWalletConnected()
 		}

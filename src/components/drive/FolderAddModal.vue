@@ -7,7 +7,7 @@
 					<div class="container">
 						<form @submit="onFolderCreate" class="mx-auto col-10">
 							<input ref="first" class="form-control mt-3 text-center" placeholder="Folder Name" v-model="form.name">
-							<input disabled class="form-control mt-3 text-center" placeholder="Parent" v-model="target">
+							<input disabled class="form-control mt-3 text-center" placeholder="Parent" v-model="form.target">
 							<button @click="onFolderCreate" class="btn btn-primary btn-block mt-3">ADD</button>
 						</form>
 					</div>
@@ -33,6 +33,7 @@ export default {
 		return {
 			form: {
 				name: "",
+				target: null,
 			}
 		}
 	},
@@ -49,6 +50,7 @@ export default {
 	},
 	mounted() {
 		this.$refs.first.focus()
+		this.form.target = this.target
 	}
 }
 </script>

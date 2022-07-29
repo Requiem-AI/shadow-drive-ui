@@ -7,6 +7,7 @@ export default new Vuex.Store({
   state: {
     routerHistory: [],
     wallet_connected: false,
+    shadow:null,
     wallet_addr: "",
     balances: {
       sol: 0,
@@ -16,6 +17,10 @@ export default new Vuex.Store({
   mutations: {
     set_wallet_connected(state, connected) {
       state.wallet_connected = connected;
+    },
+
+    set_shadow(state,shadow) {
+      state.shadow = shadow
     },
     
     set_wallet_addr(state, addr) {

@@ -64,13 +64,15 @@ export class DriveConfig {
 	}
 
 	addFolder(parent, folderName) {
-		if (parent === "")
+		if (parent === "") {
 			parent = this.getRoot().name
+			console.log("Parent not set, updating to", parent)
+		}
 
 		console.log("Adding", folderName, parent, Object.keys(this.folders))
 
-		// if (!this.folders[parent])
-		// 	this.folders[parent] = new Folder()
+		if (!this.folders[parent])
+			this.folders[parent] = new Folder()
 
 		const ok = Object.keys(this.folders)
 		for (let i = 0; i < ok.length; i++) {
@@ -81,6 +83,7 @@ export class DriveConfig {
 		if (this.folders[parent].folders.includes(folderName))
 			return "Already in folder";
 
+		console.log("Creating new folder", folderName)
 		this.folders[folderName] = new Folder(folderName, [], [])
 		this.folders[parent].addFolder(folderName)
 
